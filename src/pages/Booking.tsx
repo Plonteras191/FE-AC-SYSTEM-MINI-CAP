@@ -4,7 +4,7 @@ import DatePicker from 'react-datepicker';
 import { parseISO, format } from 'date-fns';
 import ReCAPTCHA from "react-google-recaptcha";
 import "react-datepicker/dist/react-datepicker.css";
-import styles from '../styles/Booking.module.css';
+import '../styles/DatePickerOverrides.css';
 import apiClient from '../services/api';
 
 interface ServiceDates {
@@ -183,40 +183,74 @@ const Booking = () => {
       });
   };
   return (
-    <div className={styles.container}>
-      <h2 className={styles.title}>Book Your Appointment</h2>
-      <div className={styles.bookingCard}>
-        <div className={styles.headerSection}>
-          <div className={styles.headerContent}>
-            <div className={styles.iconContainer}>
-              <svg xmlns="http://www.w3.org/2000/svg" className={styles.icon} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-            </div>
-            <h3 className={styles.headerTitle}>Schedule your service</h3>
-          </div>
+    <div className="min-h-screen bg-linear-to-br from-slate-50 to-blue-50 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-8 animate-fade-in">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            Book Your <span className="text-blue-600">AC Service</span>
+          </h1>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Schedule your air conditioning service with our professional technicians. 
+            Fast, reliable, and affordable solutions for your comfort.
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className={styles.formContainer}>
-          {formError && (
-            <div className={styles.errorAlert}>
-              <span>{formError}</span>
+        {/* Main Booking Card */}
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden animate-slide-up">
+          {/* Header Section */}
+          <div className="bg-linear-to-r from-blue-600 to-blue-700 px-6 py-8 sm:px-8">
+            <div className="flex items-center space-x-4">
+              <div className="shrink-0">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 002 2z" />
+                  </svg>
+                </div>
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-white">Schedule Your Service</h2>
+                <p className="text-blue-100 mt-1">Complete the form below to book your appointment</p>
+              </div>
             </div>
-          )}
-          <div className={styles.formContent}>
-            <div>
-              <h3 className={styles.sectionTitle}>
-                <span className={styles.numberBadge}>1</span>
-                Service Selection
-              </h3>
-              <p className={styles.sectionDescription}>Select one or more services that you need</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-8">
+            {/* Error Alert */}
+            {formError && (
+              <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg animate-fade-in">
+                <div className="flex">
+                  <div className="shrink-0">
+                    <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm text-red-700 font-medium">{formError}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+            {/* Step 1: Service Selection */}
+            <div className="space-y-6">
+              <div className="flex items-center space-x-4">
+                <div className="shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-sm">
+                  1
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900">Service Selection</h3>
+                  <p className="text-gray-600 mt-1">Select one or more services that you need</p>
+                </div>
+              </div>
               
-              <div className={styles.servicesGrid}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {Object.entries(serviceOptions).map(([key, label]) => (
                   <label 
                     key={key} 
-                    className={`${styles.serviceCard} ${
-                      selectedServices.includes(key) ? styles.serviceCardSelected : ''
+                    className={`relative cursor-pointer rounded-xl border-2 p-4 transition-all duration-200 hover:shadow-md ${
+                      selectedServices.includes(key) 
+                        ? 'border-blue-500 bg-blue-50 shadow-md' 
+                        : 'border-gray-200 bg-white hover:border-gray-300'
                     }`}
                   >
                     <input 
@@ -224,65 +258,113 @@ const Booking = () => {
                       value={key} 
                       checked={selectedServices.includes(key)} 
                       onChange={handleServiceChange}
-                      className={styles.checkbox}
+                      className="sr-only"
                     />
-                    <div className={styles.serviceLabel}>{label}</div>
+                    <div className="flex items-center space-x-3">
+                      <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${
+                        selectedServices.includes(key) 
+                          ? 'border-blue-500 bg-blue-500' 
+                          : 'border-gray-300'
+                      }`}>
+                        {selectedServices.includes(key) && (
+                          <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        )}
+                      </div>
+                      <span className="font-medium text-gray-900">{label}</span>
+                    </div>
                   </label>
                 ))}
               </div>
               
+              {/* Service Details */}
               {selectedServices.length > 0 && (
-                <div className={styles.serviceDetails}>
+                <div className="space-y-6 animate-fade-in">
                   {selectedServices.map(service => (
-                    <div key={service} className={styles.serviceDetailCard}>
-                      <h4 className={styles.serviceDetailTitle}>{serviceOptions[service]} Service Details</h4>
+                    <div key={service} className="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                      <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <svg className="w-5 h-5 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                        {serviceOptions[service]} Service Details
+                      </h4>
                       
-                      <div className={styles.formGroup}>
-                        <label className={styles.label}>
-                          Date for {serviceOptions[service]}
-                          <span className={styles.required}>*</span>
-                        </label>
-                        <DatePicker
-                          selected={serviceDates[service]}
-                          onChange={(date) => handleServiceDateChange(service, date)}
-                          minDate={new Date()}
-                          filterDate={isDateGloballyAvailable}
-                          placeholderText="Select available date"
-                          required
-                          dateFormat="yyyy-MM-dd"
-                          className={styles.input}
-                        />
-                        {errors.services?.[service]?.date && (
-                          <p className={styles.errorText}>{errors.services[service].date}</p>
-                        )}
-                      </div>
-                      
-                      <div>
-                        <label className={styles.label}>
-                          AC Types for {serviceOptions[service]}
-                          <span className={styles.required}>*</span>
-                        </label>
-                        <div className={styles.acTypesContainer}>
-                          {acTypeOptions.map(acType => (
-                            <label 
-                              key={`${service}-${acType}`}
-                              className={`${styles.acTypeCard} ${
-                                serviceAcTypes[service]?.includes(acType) ? styles.acTypeSelected : ''
-                              }`}
-                            >
-                              <input 
-                                type="checkbox" 
-                                checked={serviceAcTypes[service]?.includes(acType) || false}
-                                onChange={() => handleACTypeChange(service, acType)}
-                                className={styles.checkbox}
-                              />
-                              <span className={styles.serviceLabel}>{acType}</span>
-                            </label>
-                          ))}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Date Selection */}
+                        <div className="space-y-2">
+                          <label className="block text-sm font-medium text-gray-700">
+                            Date for {serviceOptions[service]}
+                            <span className="text-red-500 ml-1">*</span>
+                          </label>
+                          <DatePicker
+                            selected={serviceDates[service]}
+                            onChange={(date) => handleServiceDateChange(service, date)}
+                            minDate={new Date()}
+                            filterDate={isDateGloballyAvailable}
+                            placeholderText="Select available date"
+                            required
+                            dateFormat="yyyy-MM-dd"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                          />
+                          {errors.services?.[service]?.date && (
+                            <p className="text-red-600 text-sm mt-1 flex items-center">
+                              <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                              </svg>
+                              {errors.services[service].date}
+                            </p>
+                          )}
                         </div>
-                        {errors.services?.[service]?.acTypes && (
-                          <p className={styles.errorText}>{errors.services[service].acTypes}</p>
-                        )}
+                        
+                        {/* AC Types */}
+                        <div className="space-y-2">
+                          <label className="block text-sm font-medium text-gray-700">
+                            AC Types for {serviceOptions[service]}
+                            <span className="text-red-500 ml-1">*</span>
+                          </label>
+                          <div className="grid grid-cols-2 gap-3">
+                            {acTypeOptions.map(acType => (
+                              <label 
+                                key={`${service}-${acType}`}
+                                className={`relative cursor-pointer rounded-lg border-2 p-3 transition-all duration-200 hover:shadow-sm ${
+                                  serviceAcTypes[service]?.includes(acType) 
+                                    ? 'border-blue-500 bg-blue-50' 
+                                    : 'border-gray-200 bg-white hover:border-gray-300'
+                                }`}
+                              >
+                                <input 
+                                  type="checkbox" 
+                                  checked={serviceAcTypes[service]?.includes(acType) || false}
+                                  onChange={() => handleACTypeChange(service, acType)}
+                                  className="sr-only"
+                                />
+                                <div className="flex items-center space-x-2">
+                                  <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${
+                                    serviceAcTypes[service]?.includes(acType) 
+                                      ? 'border-blue-500 bg-blue-500' 
+                                      : 'border-gray-300'
+                                  }`}>
+                                    {serviceAcTypes[service]?.includes(acType) && (
+                                      <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                      </svg>
+                                    )}
+                                  </div>
+                                  <span className="font-medium text-gray-800">{acType}</span>
+                                </div>
+                              </label>
+                            ))}
+                          </div>
+                          {errors.services?.[service]?.acTypes && (
+                            <p className="text-red-600 text-sm mt-1 flex items-center">
+                              <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                              </svg>
+                              {errors.services[service].acTypes}
+                            </p>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -290,99 +372,125 @@ const Booking = () => {
               )}
             </div>
 
+            {/* Step 2: Personal Information */}
             {selectedServices.length > 0 && (
-              <div>
-                <h3 className={styles.sectionTitle}>
-                  <span className={styles.numberBadge}>2</span>
-                  Personal Information
-                </h3>
-                <div className={styles.formGrid}>
-                  <div className={styles.formGroup}>
-                    <label htmlFor="name" className={styles.label}>
-                      Full Name<span className={styles.required}>*</span>
+              <div className="space-y-6 animate-fade-in">
+                <div className="flex items-center space-x-4">
+                  <div className="shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-sm">
+                    2
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-900">Personal Information</h3>
+                    <p className="text-gray-600 mt-1">Tell us about yourself</p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                      Full Name<span className="text-red-500 ml-1">*</span>
                     </label>
                     <input 
                       type="text" 
                       id="name" 
                       name="name" 
-                      placeholder="Enter your name" 
+                      placeholder="Enter your full name" 
                       required 
                       pattern="[A-Za-z ]+" 
                       title="Name should contain only letters and spaces."
-                      className={styles.input}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors placeholder-gray-400"
                     />
                   </div>
                   
-                  <div className={styles.formGroup}>
-                    <label htmlFor="phone" className={styles.label}>
-                      Phone Number<span className={styles.required}>*</span>
+                  <div className="space-y-2">
+                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                      Phone Number<span className="text-red-500 ml-1">*</span>
                     </label>
                     <input 
                       type="tel" 
                       id="phone" 
                       name="phone" 
-                      placeholder="Enter 11-digit phone number" 
+                      placeholder="09123456789" 
                       required 
                       pattern="^[0-9]{11}$" 
                       title="Phone number must be exactly 11 digits."
-                      className={styles.input}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors placeholder-gray-400"
                     />
                   </div>
                   
-                  <div className={`${styles.formGroup} ${styles.fullWidth}`}>
-                    <label htmlFor="email" className={styles.label}>
-                      Email Address
+                  <div className="md:col-span-2 space-y-2">
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                      Email Address <span className="text-gray-400 text-xs">(Optional)</span>
                     </label>
                     <input 
                       type="email" 
                       id="email" 
                       name="email" 
-                      placeholder="Enter your email (optional)"
-                      className={styles.input}
+                      placeholder="your.email@example.com"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors placeholder-gray-400"
                     />
                   </div>
                 </div>
               </div>
             )}
 
+            {/* Step 3: Service Location */}
             {selectedServices.length > 0 && (
-              <div>
-                <h3 className={styles.sectionTitle}>
-                  <span className={styles.numberBadge}>3</span>
-                  Service Location
-                </h3>
-                <div>
-                  <label htmlFor="completeAddress" className={styles.label}>
-                    Complete Address<span className={styles.required}>*</span>
+              <div className="space-y-6 animate-fade-in">
+                <div className="flex items-center space-x-4">
+                  <div className="shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-sm">
+                    3
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-900">Service Location</h3>
+                    <p className="text-gray-600 mt-1">Where should we perform the service?</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <label htmlFor="completeAddress" className="block text-sm font-medium text-gray-700">
+                    Complete Address<span className="text-red-500 ml-1">*</span>
                   </label>
                   <textarea 
                     id="completeAddress"
                     name="completeAddress"
-                    placeholder="Enter your complete address"
+                    placeholder="Enter your complete address including street, barangay, city, and postal code"
                     required
-                    className={styles.textarea}
+                    rows={4}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors placeholder-gray-400 resize-none"
                   ></textarea>
                 </div>
               </div>
             )}
 
+            {/* Submit Section */}
             {selectedServices.length > 0 && (
-              <div className={styles.submitSection}>
-                <ReCAPTCHA
-                  ref={recaptchaRef}
-                  sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
-                  onChange={(value: string | null) => setRecaptchaValue(value)}
-                />
-                <button type="submit" className={styles.submitButton}>
-                  <svg xmlns="http://www.w3.org/2000/svg" className={styles.icon} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              <div className="border-t border-gray-200 pt-8 space-y-6 animate-fade-in">
+                <div className="flex justify-center">
+                  <ReCAPTCHA
+                    ref={recaptchaRef}
+                    sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
+                    onChange={(value: string | null) => setRecaptchaValue(value)}
+                  />
+                </div>
+                
+                <button 
+                  type="submit" 
+                  className="w-full bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-3"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 002 2z" />
                   </svg>
-                  Schedule Appointment
+                  <span>Schedule Appointment</span>
                 </button>
+                
+                <p className="text-center text-sm text-gray-500">
+                  By scheduling an appointment, you agree to our terms of service and privacy policy.
+                </p>
               </div>
             )}
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );

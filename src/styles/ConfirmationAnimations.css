@@ -1,0 +1,136 @@
+/* Custom animations for Confirmation page */
+@keyframes success-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes check-appear {
+  0% {
+    opacity: 0;
+    transform: scale(0) rotate(-45deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2) rotate(-10deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes slide-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.success-icon {
+  animation: success-pulse 2s infinite;
+}
+
+.check-animation {
+  animation: check-appear 0.8s ease-out;
+}
+
+.slide-in {
+  animation: slide-in-up 0.6s ease-out;
+}
+
+/* Service card hover effects */
+.service-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.service-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Button loading state */
+.btn-loading {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    left: 100%;
+  }
+}
+
+/* Responsive improvements */
+@media (max-width: 640px) {
+  .mobile-stack {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .mobile-full {
+    width: 100%;
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-only {
+    display: block !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .bg-linear-to-br,
+  .bg-linear-to-r {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .shadow-xl,
+  .shadow-lg,
+  .shadow-md {
+    box-shadow: none !important;
+  }
+  
+  .border {
+    border: 1px solid #ccc !important;
+  }
+  
+  .rounded-2xl,
+  .rounded-xl,
+  .rounded-lg {
+    border-radius: 8px !important;
+  }
+}
