@@ -1,0 +1,100 @@
+/* Dashboard Component Styles */
+.dashboard {
+  padding: 2rem;
+  background: #f9fafb;
+  min-height: 100vh;
+}
+
+.dashboardTitle {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #1f2937;
+  margin-bottom: 2rem;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.statCard {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #2563eb;
+}
+
+.statTitle {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.statValue {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #1f2937;
+}
+
+.chartContainer {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.chartTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1rem;
+}
+
+.recentActivity {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.activityTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1rem;
+}
+
+.activityList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.activityItem {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: between;
+  align-items: center;
+}
+
+.activityItem:last-child {
+  border-bottom: none;
+}
+
+.activityText {
+  color: #4b5563;
+  font-size: 0.875rem;
+}
+
+.activityTime {
+  color: #9ca3af;
+  font-size: 0.75rem;
+}
