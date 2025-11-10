@@ -18,46 +18,49 @@ const ExportControls = ({
   if (activeTab === 'overview') return null;
 
   return (
-    <div className="export-controls">
-      <div className="export-buttons">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      {/* Export Buttons */}
+      <div className="flex flex-wrap items-center gap-3">
         <button 
-          className="export-btn csv" 
           onClick={() => exportData('csv')}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
           title="Download as CSV"
         >
-          <FaFileCsv /> Export CSV
+          <FaFileCsv className="h-4 w-4" />
+          <span className="hidden sm:inline">Export</span> CSV
         </button>
         <button 
-          className="export-btn excel" 
           onClick={() => exportData('excel')}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           title="Download as Excel"
         >
-          <FaFileExcel /> Export Excel
+          <FaFileExcel className="h-4 w-4" />
+          <span className="hidden sm:inline">Export</span> Excel
         </button>
       </div>
       
       {/* Revenue date filter */}
       {activeTab === 'revenue' && (
-        <div className="revenue-filter-controls">
-          <div className="filter-group">
-            <label>Filter by date:</label>
-            <div className="date-filter">
-              <input 
-                type="date" 
-                className="date-picker"
-                value={selectedDate}
-                onChange={handleDateChange}
-              />
-              {selectedDate && (
-                <button 
-                  className="clear-filter-btn"
-                  onClick={clearDateFilter}
-                  title="Clear date filter"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
+        <div className="flex items-center gap-3">
+          <label className="text-sm font-medium text-gray-700 whitespace-nowrap">
+            Filter by date:
+          </label>
+          <div className="flex items-center gap-2">
+            <input 
+              type="date" 
+              value={selectedDate}
+              onChange={handleDateChange}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            />
+            {selectedDate && (
+              <button 
+                onClick={clearDateFilter}
+                className="px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                title="Clear date filter"
+              >
+                Clear
+              </button>
+            )}
           </div>
         </div>
       )}

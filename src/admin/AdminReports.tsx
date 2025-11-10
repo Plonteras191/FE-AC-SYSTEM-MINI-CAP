@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { FaCalendarAlt } from 'react-icons/fa';
-import '../styles/AdminReports.css';
 import * as XLSX from 'xlsx';
 import apiClient, { appointmentsApi } from '../services/api.tsx';
 import ReportStats from '../components/ReportStats.tsx';
@@ -390,78 +389,103 @@ const AdminReports = () => {
 
   if (isLoading) {
     return (
-      <div className="admin-reports-container loading">
-        <div className="loader"></div>
-        <p>Loading reports data...</p>
+      <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
+          <p className="mt-4 text-lg font-medium text-gray-700">Loading reports data...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="admin-reports-container">
-      <div className="admin-header">
-        <h2>Admin Reports</h2>
-        <div className="date-display">
-          <FaCalendarAlt /> {new Date().toLocaleDateString('en-US', {
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric'
-          })}
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100">
+      {/* Header Section */}
+      <div className="bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200 sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between px-4 sm:px-6 lg:px-8 py-4 sm:py-5 gap-3 sm:gap-0">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-3">
+              <span className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-lg">
+                <FaCalendarAlt className="h-5 w-5 text-blue-600" />
+              </span>
+              Admin Reports
+            </h2>
+            <div className="flex items-center gap-2 px-4 py-2 bg-linear-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
+              <FaCalendarAlt className="h-4 w-4 text-blue-600" />
+              <span className="text-sm font-medium text-gray-700">
+                {new Date().toLocaleDateString('en-US', {
+                  weekday: 'long', 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric'
+                })}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
-      <ReportStats 
-        completeAppointments={completeAppointments}
-        pendingAppointments={pendingAppointments}
-        acceptedAppointments={acceptedAppointments}
-        totalRevenueAmount={totalRevenueAmount}
-        formatCurrency={formatCurrency}
-      />
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+        {/* Stats Section */}
+        <ReportStats 
+          completeAppointments={completeAppointments}
+          pendingAppointments={pendingAppointments}
+          acceptedAppointments={acceptedAppointments}
+          totalRevenueAmount={totalRevenueAmount}
+          formatCurrency={formatCurrency}
+        />
 
-      <ReportTabs 
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-      />
-
-      <ExportControls 
-        activeTab={activeTab}
-        exportData={exportData}
-        selectedDate={selectedDate}
-        handleDateChange={handleDateChange}
-        clearDateFilter={clearDateFilter}
-      />
-
-      <div className="reports-content">
-        {activeTab === 'revenue' ? (
-          <RevenueHistory 
-            selectedDate={selectedDate}
-            filteredRevenueHistory={filteredRevenueHistory}
-            paginatedRevenueHistory={paginatedRevenueHistory}
-            clearDateFilter={clearDateFilter}
-            formatCurrency={formatCurrency}
-            filteredTotalRevenue={filteredTotalRevenue}
-            currentPage={currentPage}
-            getTotalPages={getTotalPages}
-          />
-        ) : (
-          <AppointmentReports 
+        {/* Tabs and Controls Card */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <ReportTabs 
             activeTab={activeTab}
-            completeAppointments={completeAppointments}
-            pendingAppointments={pendingAppointments}
-            acceptedAppointments={acceptedAppointments}
-            rejectedAppointments={rejectedAppointments}
-            paginatedCompletedAppointments={paginatedCompletedAppointments}
-            paginatedPendingAppointments={paginatedPendingAppointments}
-            paginatedRejectedAppointments={paginatedRejectedAppointments}
-            parseServices={parseServices}
-            getAppointmentDate={getAppointmentDate}
-            currentPage={currentPage}
-            getTotalPages={getTotalPages}
-            handlePageChange={handlePageChange}
             setActiveTab={setActiveTab}
           />
-        )}
+
+          <div className="p-4 sm:p-6 bg-gray-50/50 border-t border-gray-200">
+            <ExportControls 
+              activeTab={activeTab}
+              exportData={exportData}
+              selectedDate={selectedDate}
+              handleDateChange={handleDateChange}
+              clearDateFilter={clearDateFilter}
+            />
+          </div>
+        </div>
+
+        {/* Reports Content */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          {activeTab === 'revenue' ? (
+            <RevenueHistory 
+              selectedDate={selectedDate}
+              filteredRevenueHistory={filteredRevenueHistory}
+              paginatedRevenueHistory={paginatedRevenueHistory}
+              clearDateFilter={clearDateFilter}
+              formatCurrency={formatCurrency}
+              filteredTotalRevenue={filteredTotalRevenue}
+              currentPage={currentPage}
+              getTotalPages={getTotalPages}
+            />
+          ) : (
+            <AppointmentReports 
+              activeTab={activeTab}
+              completeAppointments={completeAppointments}
+              pendingAppointments={pendingAppointments}
+              acceptedAppointments={acceptedAppointments}
+              rejectedAppointments={rejectedAppointments}
+              paginatedCompletedAppointments={paginatedCompletedAppointments}
+              paginatedPendingAppointments={paginatedPendingAppointments}
+              paginatedRejectedAppointments={paginatedRejectedAppointments}
+              parseServices={parseServices}
+              getAppointmentDate={getAppointmentDate}
+              currentPage={currentPage}
+              getTotalPages={getTotalPages}
+              handlePageChange={handlePageChange}
+              setActiveTab={setActiveTab}
+            />
+          )}
+        </div>
       </div>
     </div>
   );
