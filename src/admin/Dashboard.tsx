@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import PageWrapper from '../components/PageWrapper.tsx';
 import apiClient, { appointmentsApi } from '../services/api.tsx';
-import styles from '../styles/Dashboard.module.css';
 import { FaCalendarAlt, FaBell, FaChartLine, FaCheck, FaClock, FaUser } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -250,24 +249,24 @@ const Dashboard = () => {
 
   return (
     <PageWrapper>
-      <div className={styles.container}>
+      <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100">
         {/* Top Navigation Bar */}
-        <div className={styles.topNav}>
-          <div className={styles.topNavInner}>
-            <div className={styles.topNavContent}>
-              <h1 className={styles.dashboardTitle}>
-                <span className={styles.titleIcon}>
-                  <FaChartLine className="h-5 w-5" />
+        <div className="bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200 sticky top-0 z-30">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+              <h1 className="flex items-center gap-2 sm:gap-3 text-xl sm:text-2xl font-bold text-gray-900">
+                <span className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-lg">
+                  <FaChartLine className="h-5 w-5 text-blue-600" />
                 </span>
                 Admin Dashboard
               </h1>
               
               {/* Right side controls */}
-              <div className={styles.controls}>
+              <div className="flex items-center gap-2 sm:gap-4">
                 {/* Date display */}
-                <div className={styles.dateDisplay}>
-                  <FaCalendarAlt className={styles.dateIcon} />
-                  <span>
+                <div className="hidden sm:flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg">
+                  <FaCalendarAlt className="h-4 w-4 text-gray-600" />
+                  <span className="text-sm font-medium text-gray-700">
                     {new Date().toLocaleDateString('en-US', {
                       weekday: 'long',
                       year: 'numeric',
@@ -278,14 +277,14 @@ const Dashboard = () => {
                 </div>
                 
                 {/* Notification Bell */}
-                <div className={styles.notificationWrapper} ref={notificationRef}>
+                <div className="relative" ref={notificationRef}>
                   <button 
-                    className={styles.notificationButton}
+                    className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
                     onClick={() => setShowNotifications(!showNotifications)}
                   >
-                    <FaBell className={styles.notificationIcon} />
+                    <FaBell className="h-5 w-5" />
                     {unreadCount > 0 && (
-                      <span className={styles.badge}>
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
                         {unreadCount > 9 ? '9+' : unreadCount}
                       </span>
                     )}
@@ -299,38 +298,39 @@ const Dashboard = () => {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
                         transition={{ duration: 0.2 }}
-                        className={styles.notificationPanel}
+                        className="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-50"
                       >
-                        <div className={styles.notificationHeader}>
-                          <h3 className={styles.notificationTitle}>Notifications</h3>
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50">
+                          <h3 className="text-sm font-semibold text-gray-900">Notifications</h3>
                           {notifications.length > 0 && (
                             <button 
                               onClick={clearAllNotifications}
-                              className={styles.clearButton}
+                              className="text-xs text-blue-600 hover:text-blue-800 font-medium"
                             >
                               Clear all
                             </button>
                           )}
                         </div>
                         
-                        <div className={styles.notificationList}>
+                        <div className="max-h-96 overflow-y-auto">
                           {notifications.length === 0 ? (
-                            <div className={styles.notificationEmpty}>
-                              <p>No new notifications</p>
+                            <div className="flex flex-col items-center justify-center py-8 text-gray-500">
+                              <FaBell className="h-8 w-8 mb-2 text-gray-300" />
+                              <p className="text-sm">No new notifications</p>
                             </div>
                           ) : (
                             notifications.map(notification => (
                               <div 
                                 key={notification.id}
-                                className={`${styles.notificationItem} ${!notification.read ? styles.notificationItemUnread : ''}`}
+                                className={`px-4 py-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors duration-150 ${!notification.read ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''}`}
                                 onClick={() => handleNotificationClick(notification)}
                               >
-                                <div className={styles.notificationContent}>
-                                  <div className={styles.notificationText}>
-                                    <p className={styles.notificationTitle}>{notification.title}</p>
-                                    <p className={styles.notificationMessage}>{notification.message}</p>
+                                <div className="flex justify-between items-start">
+                                  <div className="flex-1">
+                                    <p className="text-sm font-medium text-gray-900">{notification.title}</p>
+                                    <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
                                   </div>
-                                  <span className={styles.notificationTime}>
+                                  <span className="text-xs text-gray-500 ml-2 whitespace-nowrap">
                                     {formatNotificationTime(notification.time)}
                                   </span>
                                 </div>
@@ -344,8 +344,8 @@ const Dashboard = () => {
                 </div>
                 
                 {/* User Profile */}
-                <div className={styles.userProfile}>
-                  <FaUser className="h-4 w-4" />
+                <div className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-lg">
+                  <FaUser className="h-4 w-4 text-gray-600" />
                 </div>
               </div>
             </div>
@@ -353,27 +353,27 @@ const Dashboard = () => {
         </div>
         
         {/* Main Content */}
-        <div className={styles.mainContent}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Stats Overview */}
-          <div className={styles.statsGrid}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 lg:gap-6 mb-8">
             {/* Total Appointments Card */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.1 }}
-              className={styles.statsCard}
+              className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md hover:scale-105 transition-all duration-200"
             >
-              <div className={styles.statsHeader}>
+                <div className="flex items-start justify-between mb-4">
                 <div>
-                  <p className={styles.statsLabel}>Total Appointments</p>
-                  <h3 className={styles.statsValue}>{stats.total}</h3>
+                  <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">Total Appointments</p>
+                  <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">{stats.total}</h3>
                 </div>
-                <div className={`${styles.iconWrapper} ${styles.blueIcon}`}>
-                  <FaCalendarAlt className="h-5 w-5 text-blue-600" />
+                <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg">
+                  <FaCalendarAlt className="h-6 w-6 text-blue-600" />
                 </div>
               </div>
-              <div className={styles.progressBar}>
-                <div className={`${styles.progressFill} ${styles.blueFill}`} style={{ width: '100%' }}></div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="bg-blue-500 h-2 rounded-full" style={{ width: '100%' }}></div>
               </div>
             </motion.div>
             
@@ -382,28 +382,28 @@ const Dashboard = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.2 }}
-              className={styles.statsCard}
+              className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md hover:scale-105 transition-all duration-200"
             >
-              <div className={styles.statsHeader}>
+              <div className="flex items-center justify-between mb-4">
                 <div>
-                  <p className={styles.statsLabel}>Pending</p>
-                  <h3 className={styles.statsValue}>{stats.pending}</h3>
+                  <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">Pending</p>
+                  <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">{stats.pending}</h3>
                 </div>
-                <div className={`${styles.iconWrapper} ${styles.amberIcon}`}>
-                  <FaClock className="h-5 w-5 text-amber-600" />
+                <div className="flex items-center justify-center w-12 h-12 bg-amber-100 rounded-lg">
+                  <FaClock className="h-6 w-6 text-amber-600" />
                 </div>
               </div>
-              <div className={styles.progressBar}>
+              <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
                 <div 
-                  className={`${styles.progressFill} ${styles.amberFill}`}
+                  className="bg-amber-500 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${stats.total ? Math.round((stats.pending / stats.total) * 100) : 0}%` }}
                 ></div>
               </div>
               {stats.pending > 0 && (
-                <div className={styles.alertText}>
-                  <span className={styles.alertDot}>
-                    <span className={styles.alertDotPing}></span>
-                    <span className={styles.alertDotCenter}></span>
+                <div className="flex items-center text-amber-700 text-xs font-medium">
+                  <span className="relative flex h-2 w-2 mr-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
                   </span>
                   Requires attention
                 </div>
@@ -415,19 +415,19 @@ const Dashboard = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.3 }}
-              className={styles.statsCard}
+              className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md hover:scale-105 transition-all duration-200"
             >
-              <div className={styles.statsHeader}>
+              <div className="flex items-center justify-between mb-4">
                 <div>
-                  <p className={styles.statsLabel}>Accepted</p>
-                  <h3 className={styles.statsValue}>{stats.accepted}</h3>
+                  <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">Accepted</p>
+                  <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">{stats.accepted}</h3>
                 </div>
-                <div className={`${styles.iconWrapper} ${styles.greenIcon}`}>
-                  <FaCheck className="h-5 w-5 text-green-600" />
+                <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg">
+                  <FaCheck className="h-6 w-6 text-green-600" />
                 </div>
               </div>
-              <div className={styles.progressBar}>
-                <div className={`${styles.progressFill} ${styles.greenFill}`}
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="bg-green-500 h-2 rounded-full transition-all duration-300"
                      style={{ width: `${stats.total ? Math.round((stats.accepted / stats.total) * 100) : 0}%` }}></div>
               </div>
             </motion.div>
@@ -437,19 +437,19 @@ const Dashboard = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.4 }}
-              className={styles.statsCard}
+              className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md hover:scale-105 transition-all duration-200"
             >
-              <div className={styles.statsHeader}>
+              <div className="flex items-center justify-between mb-4">
                 <div>
-                  <p className={styles.statsLabel}>Completed</p>
-                  <h3 className={styles.statsValue}>{stats.completed}</h3>
+                  <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">Completed</p>
+                  <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">{stats.completed}</h3>
                 </div>
-                <div className={`${styles.iconWrapper} ${styles.purpleIcon}`}>
-                  <FaCheck className="h-5 w-5 text-purple-600" />
+                <div className="flex items-center justify-center w-12 h-12 bg-purple-100 rounded-lg">
+                  <FaCheck className="h-6 w-6 text-purple-600" />
                 </div>
               </div>
-              <div className={styles.progressBar}>
-                <div className={`${styles.progressFill} ${styles.purpleFill}`}
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="bg-purple-500 h-2 rounded-full transition-all duration-300"
                      style={{ width: `${stats.total ? Math.round((stats.completed / stats.total) * 100) : 0}%` }}></div>
               </div>
             </motion.div>
@@ -459,21 +459,21 @@ const Dashboard = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.5 }}
-              className={styles.statsCard}
+              className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md hover:scale-105 transition-all duration-200"
             >
-              <div className={styles.statsHeader}>
+              <div className="flex items-center justify-between mb-4">
                 <div>
-                  <p className={styles.statsLabel}>{getCurrentMonthName()} Revenue</p>
-                  <h3 className={styles.statsValue}>
+                  <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">{getCurrentMonthName()} Revenue</p>
+                  <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
                     ₱{currentMonthRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </h3>
                 </div>
-                <div className={`${styles.iconWrapper} ${styles.skyIcon}`}>
-                  <FaChartLine className="h-5 w-5 text-sky-600" />
+                <div className="flex items-center justify-center w-12 h-12 bg-sky-100 rounded-lg">
+                  <FaChartLine className="h-6 w-6 text-sky-600" />
                 </div>
               </div>
-              <div className={styles.progressBar}>
-                <div className={`${styles.progressFill} ${styles.skyFill}`} style={{ width: '60%' }}></div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="bg-sky-500 h-2 rounded-full transition-all duration-300" style={{ width: '60%' }}></div>
               </div>
             </motion.div>
           </div>
@@ -483,58 +483,58 @@ const Dashboard = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.6 }}
-            className={styles.metricsSection}
+            className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200"
           >
-            <h2 className={styles.metricsTitle}>
-              <span className={styles.metricsTitleIcon}>
+            <h2 className="flex items-center gap-3 text-xl font-bold text-gray-900 mb-6">
+              <span className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-lg">
                 <FaChartLine className="h-5 w-5 text-indigo-600" />
               </span>
               Performance Metrics
             </h2>
-            <div className={styles.metricsGrid}>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
               {/* Acceptance Rate */}
-              <div className={styles.metricsCard}>
-                <div className={styles.metricsHeader}>
-                  <span className={styles.metricsLabel}>Acceptance Rate</span>
-                  <span className={styles.metricsValue}>
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-sm font-medium text-gray-600">Acceptance Rate</span>
+                  <span className="text-lg font-bold text-gray-900">
                     {stats.total ? Math.round((stats.accepted / stats.total) * 100) : 0}%
                   </span>
                 </div>
-                <div className={styles.progressBar}>
+                <div className="w-full bg-gray-200 rounded-full h-2">
                   <div 
-                    className={`${styles.progressFill} ${styles.blueFill}`} 
+                    className="bg-blue-500 h-2 rounded-full transition-all duration-500" 
                     style={{ width: `${stats.total ? Math.round((stats.accepted / stats.total) * 100) : 0}%` }}
                   ></div>
                 </div>
               </div>
               
               {/* Completion Rate */}
-              <div className={styles.metricsCard}>
-                <div className={styles.metricsHeader}>
-                  <span className={styles.metricsLabel}>Completion Rate</span>
-                  <span className={styles.metricsValue}>
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-sm font-medium text-gray-600">Completion Rate</span>
+                  <span className="text-lg font-bold text-gray-900">
                     {stats.total ? Math.round((stats.completed / stats.total) * 100) : 0}%
                   </span>
                 </div>
-                <div className={styles.progressBar}>
+                <div className="w-full bg-gray-200 rounded-full h-2">
                   <div 
-                    className={`${styles.progressFill} ${styles.greenFill}`}
+                    className="bg-green-500 h-2 rounded-full transition-all duration-500"
                     style={{ width: `${stats.total ? Math.round((stats.completed / stats.total) * 100) : 0}%` }}
                   ></div>
                 </div>
               </div>
               
               {/* Rejection Rate */}
-              <div className={styles.metricsCard}>
-                <div className={styles.metricsHeader}>
-                  <span className={styles.metricsLabel}>Rejection Rate</span>
-                  <span className={styles.metricsValue}>
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-sm font-medium text-gray-600">Rejection Rate</span>
+                  <span className="text-lg font-bold text-gray-900">
                     {stats.total ? Math.round((stats.rejected / stats.total) * 100) : 0}%
                   </span>
                 </div>
-                <div className={styles.progressBar}>
+                <div className="w-full bg-gray-200 rounded-full h-2">
                   <div 
-                    className={`${styles.progressFill} ${styles.redFill}`}
+                    className="bg-red-500 h-2 rounded-full transition-all duration-500"
                     style={{ width: `${stats.total ? Math.round((stats.rejected / stats.total) * 100) : 0}%` }}
                   ></div>
                 </div>

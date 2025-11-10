@@ -157,11 +157,38 @@ const AdminCalendar = () => {
   const handleEventMouseEnter = (mouseEnterInfo: any) => {
     setHoverEvent(mouseEnterInfo.event);
     
-    // Calculate position for tooltip
-    const rect = mouseEnterInfo.el.getBoundingClientRect();
-    setTooltipPosition({
-      x: rect.right + 10,
-      y: rect.top
+    // Use requestAnimationFrame to ensure DOM is fully updated
+    requestAnimationFrame(() => {
+      const element = mouseEnterInfo.el;
+      if (!element) return;
+      
+      const rect = element.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const tooltipWidth = 320;
+      const tooltipHeight = 350;
+      const gap = 12;
+      
+      // Calculate position: try right side first
+      let x = rect.right + gap;
+      let y = rect.top;
+      
+      // If tooltip overflows on right, position on left
+      if (x + tooltipWidth > viewportWidth) {
+        x = rect.left - tooltipWidth - gap;
+      }
+      
+      // If tooltip still overflows on left, center it
+      if (x < 0) {
+        x = Math.max(10, (viewportWidth - tooltipWidth) / 2);
+      }
+      
+      // Check vertical overflow
+      if (y + tooltipHeight > viewportHeight) {
+        y = Math.max(10, viewportHeight - tooltipHeight - 10);
+      }
+      
+      setTooltipPosition({ x, y });
     });
   };
 
@@ -201,82 +228,121 @@ const AdminCalendar = () => {
   };
 
   return (
-    <div className="admin-calendar-container">
-      <div className="calendar-header">
-        <div className="calendar-title">
-          <FaCalendarAlt className="calendar-icon" />
-          <h2>Service Appointment Calendar</h2>
-        </div>
-        <div className="calendar-filters">
-          <div className="filter-control">
-            <label htmlFor="serviceFilter">Service:</label>
-            <select 
-              id="serviceFilter" 
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
-              className="service-filter"
-            >
-              <option value="all">All Services</option>
-              {serviceTypes.map(type => (
-                <option key={type} value={type}>{type}</option>
-              ))}
-            </select>
+    <div className="w-full space-y-6 animate-fade-in">
+      {/* Header Section */}
+      <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+          {/* Title */}
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-linear-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+              <FaCalendarAlt className="text-white text-xl" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Service Appointment Calendar
+              </h2>
+              <p className="text-gray-500 text-sm">Manage and view all scheduled services</p>
+            </div>
           </div>
-          <div className="filter-control">
-            <label htmlFor="statusFilter">Status:</label>
-            <select 
-              id="statusFilter" 
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="status-filter"
-            >
-              <option value="all">All Statuses</option>
-              <option value="Pending">Pending</option>
-              <option value="Accepted">Accepted</option>
-              <option value="Completed">Completed</option>
-            </select>
+          
+          {/* Filters and Actions */}
+          <div className="flex flex-col sm:flex-row gap-4 lg:gap-6">
+            <div className="flex flex-col sm:flex-row gap-4">
+              {/* Service Filter */}
+              <div className="space-y-1">
+                <label htmlFor="serviceFilter" className="block text-sm font-medium text-gray-700">
+                  Service Type
+                </label>
+                <select 
+                  id="serviceFilter" 
+                  value={filterType}
+                  onChange={(e) => setFilterType(e.target.value)}
+                  className="w-full sm:w-40 px-4 py-2.5 bg-white border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
+                >
+                  <option value="all">All Services</option>
+                  {serviceTypes.map(type => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+              </div>
+              
+              {/* Status Filter */}
+              <div className="space-y-1">
+                <label htmlFor="statusFilter" className="block text-sm font-medium text-gray-700">
+                  Status
+                </label>
+                <select 
+                  id="statusFilter" 
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                  className="w-full sm:w-36 px-4 py-2.5 bg-white border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
+                >
+                  <option value="all">All Statuses</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Accepted">Accepted</option>
+                  <option value="Completed">Completed</option>
+                </select>
+              </div>
+            </div>
+            
+            {/* Refresh Button */}
+            <div className="flex items-end">
+              <button 
+                onClick={fetchAppointments} 
+                className="px-6 py-2.5 bg-linear-to-r from-blue-600 to-purple-600 text-white rounded-xl font-medium shadow-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 active:scale-95 flex items-center space-x-2"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                <span>Refresh</span>
+              </button>
+            </div>
           </div>
-          <button onClick={fetchAppointments} className="refresh-button">
-            Refresh Calendar
-          </button>
         </div>
       </div>
       
-      <div className="calendar-view-legend">
-        <div className="calendar-legend">
-          <div className="legend-title">Service Types:</div>
-          <div className="legend-items">
-            <div className="legend-item">
-              <span className="color-box" style={{backgroundColor: '#4e73df'}}></span>
-              <span>Cleaning</span>
-            </div>
-            <div className="legend-item">
-              <span className="color-box" style={{backgroundColor: '#e74a3b'}}></span>
-              <span>Repair</span>
-            </div>
-            <div className="legend-item">
-              <span className="color-box" style={{backgroundColor: '#1cc88a'}}></span>
-              <span>Installation</span>
-            </div>
-            <div className="legend-item">
-              <span className="color-box" style={{backgroundColor: '#f6c23e'}}></span>
-              <span>Maintenance</span>
-            </div>
-            <div className="legend-item">
-              <span className="color-box" style={{backgroundColor: '#808080'}}></span>
-              <span>Checkup</span>
-            </div>
+      {/* Legend Section */}
+      <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6">
+        <div className="flex items-center space-x-3 mb-4">
+          <div className="w-8 h-8 bg-linear-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+            <FaTools className="text-white text-sm" />
+          </div>
+          <h3 className="text-lg font-semibold text-gray-800">Service Type Legend</h3>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-xl border border-blue-100">
+            <div className="w-4 h-4 rounded-full shadow-sm" style={{backgroundColor: '#4e73df'}}></div>
+            <span className="text-sm font-medium text-gray-700">Cleaning</span>
+          </div>
+          <div className="flex items-center space-x-3 p-3 bg-red-50 rounded-xl border border-red-100">
+            <div className="w-4 h-4 rounded-full shadow-sm" style={{backgroundColor: '#e74a3b'}}></div>
+            <span className="text-sm font-medium text-gray-700">Repair</span>
+          </div>
+          <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-xl border border-green-100">
+            <div className="w-4 h-4 rounded-full shadow-sm" style={{backgroundColor: '#1cc88a'}}></div>
+            <span className="text-sm font-medium text-gray-700">Installation</span>
+          </div>
+          <div className="flex items-center space-x-3 p-3 bg-yellow-50 rounded-xl border border-yellow-100">
+            <div className="w-4 h-4 rounded-full shadow-sm" style={{backgroundColor: '#f6c23e'}}></div>
+            <span className="text-sm font-medium text-gray-700">Maintenance</span>
+          </div>
+          <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
+            <div className="w-4 h-4 rounded-full shadow-sm" style={{backgroundColor: '#808080'}}></div>
+            <span className="text-sm font-medium text-gray-700">Checkup</span>
           </div>
         </div>
       </div>
       
       {loading ? (
-        <div className="calendar-loading">
-          <div className="loader"></div>
-          <p>Loading appointments...</p>
+        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-12 flex flex-col items-center justify-center space-y-4">
+          <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+          <div className="text-center">
+            <p className="text-lg font-medium text-gray-700">Loading appointments...</p>
+            <p className="text-sm text-gray-500 mt-1">Please wait while we fetch your calendar data</p>
+          </div>
         </div>
       ) : (
-        <div className="calendar-wrapper">
+        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6 overflow-hidden">
           <FullCalendar 
             plugins={[dayGridPlugin, interactionPlugin]}
             initialView="dayGridMonth"
@@ -299,124 +365,208 @@ const AdminCalendar = () => {
             eventMouseLeave={handleEventMouseLeave}
             eventContent={(eventInfo) => {
               return (
-                <div className="custom-event-content" style={{opacity: eventInfo.event.extendedProps.opacity}}>
-                  <div className="event-title">{eventInfo.event.title}</div>
-                  <div className="event-customer">
-                    <FaUser size="0.8em" /> {eventInfo.event.extendedProps.customer}
+                <div className="p-1 rounded-md transition-all duration-200 hover:scale-105 cursor-pointer" style={{opacity: eventInfo.event.extendedProps.opacity}}>
+                  <div className="text-xs font-medium text-white truncate">{eventInfo.event.title}</div>
+                  <div className="flex items-center space-x-1 mt-1">
+                    <FaUser className="text-white/80" size="0.7em" />
+                    <span className="text-xs text-white/90 truncate">{eventInfo.event.extendedProps.customer}</span>
                   </div>
                 </div>
               );
             }}
           />
-          
-          {/* Event Hover Tooltip */}
-          {hoverEvent && (
-            <div 
-              className="event-tooltip" 
-              style={{
-                left: `${tooltipPosition.x}px`,
-                top: `${tooltipPosition.y}px`
-              }}
-            >
-              <div className="tooltip-header" style={{backgroundColor: hoverEvent.backgroundColor}}>
-                <h4>{hoverEvent.extendedProps.service}</h4>
+        </div>
+      )}
+      
+      {/* Event Hover Tooltip - Moved outside calendar wrapper */}
+      {hoverEvent && (
+        <div 
+          className="fixed z-9999 w-80 bg-white rounded-2xl shadow-2xl border border-white/20 overflow-hidden pointer-events-none"
+          style={{
+            left: `${tooltipPosition.x}px`,
+            top: `${tooltipPosition.y}px`,
+            position: 'fixed',
+            willChange: 'transform'
+          }}
+        >
+              <div 
+                className="px-4 py-3 text-white"
+                style={{backgroundColor: hoverEvent.backgroundColor}}
+              >
+                <h4 className="font-semibold text-lg">{hoverEvent.extendedProps.service}</h4>
+                <p className="text-white/90 text-sm">Service Details</p>
               </div>
-              <div className="tooltip-body">
-                <div className="tooltip-detail">
-                  <FaCalendarAlt /> 
-                  <span>{formatDate(hoverEvent.extendedProps.date)}</span>
+              <div className="p-4 space-y-3">
+                <div className="flex items-center space-x-3 text-sm">
+                  <FaCalendarAlt className="text-blue-500 w-4 h-4 shrink-0" />
+                  <span className="text-gray-700">{formatDate(hoverEvent.extendedProps.date)}</span>
                 </div>
-                <div className="tooltip-detail">
-                  <FaUser /> 
-                  <span>{hoverEvent.extendedProps.customer}</span>
+                <div className="flex items-center space-x-3 text-sm">
+                  <FaUser className="text-blue-500 w-4 h-4 shrink-0" />
+                  <span className="text-gray-700">{hoverEvent.extendedProps.customer}</span>
                 </div>
-                <div className="tooltip-detail">
-                  <FaMapMarkerAlt /> 
-                  <span>{hoverEvent.extendedProps.address}</span>
-                </div>                <div className="tooltip-detail">
-                  <FaSnowflake /> 
-                  <span>AC Types: {formatAcTypes(hoverEvent.extendedProps.acTypes)}</span>
+                <div className="flex items-start space-x-3 text-sm">
+                  <FaMapMarkerAlt className="text-blue-500 w-4 h-4 shrink-0 mt-0.5" />
+                  <span className="text-gray-700 line-clamp-2">{hoverEvent.extendedProps.address}</span>
+                </div>
+                <div className="flex items-center space-x-3 text-sm">
+                  <FaSnowflake className="text-blue-500 w-4 h-4 shrink-0" />
+                  <span className="text-gray-700">AC Types: {formatAcTypes(hoverEvent.extendedProps.acTypes)}</span>
                 </div>
                 {hoverEvent.extendedProps.technicians && hoverEvent.extendedProps.technicians.length > 0 && (
-                  <div className="tooltip-detail">
-                    <FaTools />
-                    <span>Technicians: {hoverEvent.extendedProps.technicians.join(', ')}</span>
+                  <div className="flex items-center space-x-3 text-sm">
+                    <FaTools className="text-blue-500 w-4 h-4 shrink-0" />
+                    <span className="text-gray-700">Technicians: {hoverEvent.extendedProps.technicians.join(', ')}</span>
                   </div>
                 )}
-                <div className="tooltip-status">
-                  <span className={`status-badge ${hoverEvent.extendedProps.status.toLowerCase().replace(' ', '-')}`}>
+                <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                    hoverEvent.extendedProps.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                    hoverEvent.extendedProps.status === 'Accepted' ? 'bg-green-100 text-green-800' :
+                    hoverEvent.extendedProps.status === 'Completed' ? 'bg-blue-100 text-blue-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
                     {hoverEvent.extendedProps.status}
                   </span>
-                </div>
-                <div className="tooltip-footer">
-                  <small>Click for more details</small>
+                  <span className="text-xs text-gray-500">Click for more details</span>
                 </div>
               </div>
             </div>
           )}
-        </div>
-      )}
       
       {/* Event Details Modal */}
       {selectedEvent && (
-        <div className="event-modal-overlay" onClick={closeEventModal}>
-          <div className="event-modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="event-modal-header" style={{backgroundColor: selectedEvent.backgroundColor}}>
-              <h3>{selectedEvent.extendedProps.service}</h3>
-              <button className="close-modal" onClick={closeEventModal}>
-                <FaTimes />
-              </button>
-            </div>
-            <div className="event-modal-body">
-              <div className="event-detail">
-                <FaCalendarAlt /> 
-                <span>{formatDate(selectedEvent.extendedProps.date)}</span>
-              </div>
-              <div className="event-detail">
-                <FaTools /> 
-                <span>Service: {selectedEvent.extendedProps.service}</span>
-              </div>
-              <div className="event-detail">
-                <FaSnowflake />
-                <span>AC Types: {formatAcTypes(selectedEvent.extendedProps.acTypes)}</span>
-              </div>
-              <div className="event-detail">
-                <FaUser /> 
-                <span>Customer: {selectedEvent.extendedProps.customer}</span>
-              </div>
-              <div className="event-detail">
-                <span>Phone: {selectedEvent.extendedProps.phone}</span>
-              </div>
-              {selectedEvent.extendedProps.email && (
-                <div className="event-detail">
-                  <span>Email: {selectedEvent.extendedProps.email}</span>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in" onClick={closeEventModal}>
+          <div className="bg-white rounded-2xl shadow-2xl border border-white/20 w-full max-w-2xl max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div 
+              className="px-6 py-4 text-white relative"
+              style={{backgroundColor: selectedEvent.backgroundColor}}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl font-bold">{selectedEvent.extendedProps.service}</h3>
+                  <p className="text-white/90 text-sm">Service Appointment Details</p>
                 </div>
-              )}              <div className="event-detail">
-                <FaMapMarkerAlt /> 
-                <span>Address: {selectedEvent.extendedProps.address}</span>
+                <button 
+                  className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors duration-200"
+                  onClick={closeEventModal}
+                >
+                  <FaTimes className="w-5 h-5" />
+                </button>
               </div>
+            </div>
+            
+            {/* Modal Body */}
+            <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
+              {/* Date and Service Info */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex items-center space-x-3 p-4 bg-blue-50 rounded-xl border border-blue-100">
+                  <FaCalendarAlt className="text-blue-600 w-5 h-5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Date</p>
+                    <p className="text-sm text-gray-600">{formatDate(selectedEvent.extendedProps.date)}</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3 p-4 bg-purple-50 rounded-xl border border-purple-100">
+                  <FaTools className="text-purple-600 w-5 h-5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Service Type</p>
+                    <p className="text-sm text-gray-600">{selectedEvent.extendedProps.service}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Customer Information */}
+              <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+                <h4 className="font-semibold text-gray-800 flex items-center space-x-2">
+                  <FaUser className="text-gray-600" />
+                  <span>Customer Information</span>
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Name</p>
+                    <p className="text-sm text-gray-600">{selectedEvent.extendedProps.customer}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Phone</p>
+                    <p className="text-sm text-gray-600">{selectedEvent.extendedProps.phone}</p>
+                  </div>
+                  {selectedEvent.extendedProps.email && (
+                    <div className="sm:col-span-2">
+                      <p className="text-sm font-medium text-gray-700">Email</p>
+                      <p className="text-sm text-gray-600">{selectedEvent.extendedProps.email}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Address */}
+              <div className="flex items-start space-x-3 p-4 bg-green-50 rounded-xl border border-green-100">
+                <FaMapMarkerAlt className="text-green-600 w-5 h-5 shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-700">Service Address</p>
+                  <p className="text-sm text-gray-600">{selectedEvent.extendedProps.address}</p>
+                </div>
+              </div>
+
+              {/* AC Types */}
+              <div className="flex items-center space-x-3 p-4 bg-cyan-50 rounded-xl border border-cyan-100">
+                <FaSnowflake className="text-cyan-600 w-5 h-5 shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-gray-700">AC Types</p>
+                  <p className="text-sm text-gray-600">{formatAcTypes(selectedEvent.extendedProps.acTypes)}</p>
+                </div>
+              </div>
+
+              {/* Technicians */}
               {selectedEvent.extendedProps.technicians && selectedEvent.extendedProps.technicians.length > 0 && (
-                <div className="event-detail technicians">
-                  <FaTools />
-                  <span>Assigned Technicians:</span>
-                  <div className="technician-list">
+                <div className="bg-orange-50 rounded-xl p-4 border border-orange-100">
+                  <h4 className="font-semibold text-gray-800 flex items-center space-x-2 mb-3">
+                    <FaTools className="text-orange-600" />
+                    <span>Assigned Technicians</span>
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
                     {selectedEvent.extendedProps.technicians.map((tech, index) => (
-                      <span key={index} className="technician-tag">{tech}</span>
+                      <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 border border-orange-200">
+                        {tech}
+                      </span>
                     ))}
                   </div>
                 </div>
               )}
-              <div className="event-detail booking-id">
-                <span>Booking ID: #{selectedEvent.extendedProps.bookingId}</span>
-              </div>
-              <div className="event-status">
-                <span className={`status-badge ${selectedEvent.extendedProps.status.toLowerCase().replace(' ', '-')}`}>
+
+              {/* Booking ID and Status */}
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                <div>
+                  <p className="text-sm font-medium text-gray-700">Booking ID</p>
+                  <p className="text-lg font-mono font-bold text-gray-800">#{selectedEvent.extendedProps.bookingId}</p>
+                </div>
+                <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium ${
+                  selectedEvent.extendedProps.status === 'Pending' ? 'bg-yellow-100 text-yellow-800 border border-yellow-200' :
+                  selectedEvent.extendedProps.status === 'Accepted' ? 'bg-green-100 text-green-800 border border-green-200' :
+                  selectedEvent.extendedProps.status === 'Completed' ? 'bg-blue-100 text-blue-800 border border-blue-200' :
+                  'bg-gray-100 text-gray-800 border border-gray-200'
+                }`}>
                   {selectedEvent.extendedProps.status}
                 </span>
               </div>
             </div>
-            <div className="event-modal-footer">
-              <button className="action-button" onClick={closeEventModal}>Close</button>
+            
+            {/* Modal Footer */}
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end space-x-3">
+              <button 
+                className="px-6 py-2 bg-white border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+                onClick={closeEventModal}
+              >
+                Close
+              </button>
+              <button 
+                className="px-6 py-2 bg-linear-to-r from-blue-600 to-purple-600 text-white rounded-xl font-medium shadow-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 active:scale-95"
+                onClick={closeEventModal}
+              >
+                Got it
+              </button>
             </div>
           </div>
         </div>

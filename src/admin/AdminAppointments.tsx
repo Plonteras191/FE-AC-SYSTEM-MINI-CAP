@@ -354,49 +354,169 @@ const AdminAppointments = () => {
 
   return (
     <PageWrapper>
-      <div className="admin-appointments-container">
-        <h2>Admin Appointments</h2>
-        {isLoading && <div className="loading-spinner">Loading...</div>}
-        
-        {/* Tabs */}
-        <div className="appointment-tabs">
-          <button 
-            className={`tab-button ${activeTab === 'pending' ? 'active' : ''}`}
-            onClick={() => setActiveTab('pending')}
-          >
-            Pending Appointments ({appointments.length})
-          </button>
-          <button 
-            className={`tab-button ${activeTab === 'accepted' ? 'active' : ''}`}
-            onClick={() => setActiveTab('accepted')}
-          >
-            Accepted Appointments ({acceptedAppointments.length})
-          </button>
+      <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-purple-50 p-4 sm:p-6 lg:p-8">
+        <div className="max-w-7xl mx-auto space-y-6">
+          {/* Header Section */}
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6 sm:p-8">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div className="flex items-center space-x-4">
+                <div className="bg-linear-to-r from-blue-600 to-purple-600 p-3 rounded-xl shadow-lg">
+                  <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a4 4 0 118 0v4M3 7h18M5 21h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-900">Admin Appointments</h2>
+                  <p className="text-gray-600 mt-1">Manage and track appointment requests</p>
+                </div>
+              </div>
+              
+              {/* Loading Indicator */}
+              {isLoading && (
+                <div className="flex items-center space-x-2 bg-blue-50 px-4 py-2 rounded-full border border-blue-200">
+                  <svg className="animate-spin h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span className="text-blue-700 font-medium">Loading...</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-linear-to-r from-orange-400 to-orange-600 rounded-2xl p-6 text-white shadow-lg transform hover:scale-105 transition-all duration-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-orange-100 text-sm font-medium">Pending</p>
+                  <p className="text-3xl font-bold">{appointments.length}</p>
+                </div>
+                <svg className="h-12 w-12 text-orange-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+            </div>
+            
+            <div className="bg-linear-to-r from-green-400 to-green-600 rounded-2xl p-6 text-white shadow-lg transform hover:scale-105 transition-all duration-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-green-100 text-sm font-medium">Accepted</p>
+                  <p className="text-3xl font-bold">{acceptedAppointments.length}</p>
+                </div>
+                <svg className="h-12 w-12 text-green-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+            </div>
+            
+            <div className="bg-linear-to-r from-blue-400 to-blue-600 rounded-2xl p-6 text-white shadow-lg transform hover:scale-105 transition-all duration-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-blue-100 text-sm font-medium">Total</p>
+                  <p className="text-3xl font-bold">{appointments.length + acceptedAppointments.length}</p>
+                </div>
+                <svg className="h-12 w-12 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+            </div>
+            
+            <div className="bg-linear-to-r from-purple-400 to-purple-600 rounded-2xl p-6 text-white shadow-lg transform hover:scale-105 transition-all duration-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-purple-100 text-sm font-medium">Active</p>
+                  <p className="text-3xl font-bold">{activeTab === 'pending' ? appointments.length : acceptedAppointments.length}</p>
+                </div>
+                <svg className="h-12 w-12 text-purple-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          {/* Main Content Card */}
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">
+            {/* Tabs */}
+            <div className="border-b border-gray-200 bg-gray-50/50">
+              <nav className="flex space-x-8 px-6 sm:px-8" aria-label="Tabs">
+                <button
+                  onClick={() => setActiveTab('pending')}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
+                    activeTab === 'pending'
+                      ? 'border-orange-500 text-orange-600 bg-orange-50/50 rounded-t-lg'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center space-x-2">
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Pending Appointments</span>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      activeTab === 'pending' 
+                        ? 'bg-orange-100 text-orange-800' 
+                        : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {appointments.length}
+                    </span>
+                  </div>
+                </button>
+                
+                <button
+                  onClick={() => setActiveTab('accepted')}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
+                    activeTab === 'accepted'
+                      ? 'border-green-500 text-green-600 bg-green-50/50 rounded-t-lg'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center space-x-2">
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Accepted Appointments</span>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      activeTab === 'accepted' 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {acceptedAppointments.length}
+                    </span>
+                  </div>
+                </button>
+              </nav>
+            </div>
+
+            {/* Content Area */}
+            <div className="p-6 sm:p-8">
+              <PaginationControls
+                itemsPerPage={itemsPerPage}
+                handleItemsPerPageChange={handleItemsPerPageChange}
+                currentPage={currentPage}
+                totalPages={totalPages}
+                handlePageChange={handlePageChange}
+              />
+
+              <AppointmentList
+                activeTab={activeTab}
+                appointments={appointments}
+                acceptedAppointments={acceptedAppointments}
+                getPaginatedData={getPaginatedData}
+                isLoading={isLoading}
+                openRejectModal={openRejectModal}
+                openAcceptModal={openAcceptModal}
+                openRescheduleModal={openRescheduleModal}
+                openCompleteModal={openCompleteModal}
+                parseServices={parseServices}
+                parseServicesFormatted={parseServicesFormatted}
+                parseAcTypes={parseAcTypes}
+              />
+            </div>
+          </div>
         </div>
 
-        <PaginationControls
-          itemsPerPage={itemsPerPage}
-          handleItemsPerPageChange={handleItemsPerPageChange}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          handlePageChange={handlePageChange}
-        />
-
-        <AppointmentList
-          activeTab={activeTab}
-          appointments={appointments}
-          acceptedAppointments={acceptedAppointments}
-          getPaginatedData={getPaginatedData}
-          isLoading={isLoading}
-          openRejectModal={openRejectModal}
-          openAcceptModal={openAcceptModal}
-          openRescheduleModal={openRescheduleModal}
-          openCompleteModal={openCompleteModal}
-          parseServices={parseServices}
-          parseServicesFormatted={parseServicesFormatted}
-          parseAcTypes={parseAcTypes}
-        />
-
+        {/* Modals */}
         <AppointmentModals
           isConfirmModalOpen={isConfirmModalOpen}
           isAcceptModalOpen={isAcceptModalOpen}

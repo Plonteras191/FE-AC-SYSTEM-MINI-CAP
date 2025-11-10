@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
+import { FaTimes } from 'react-icons/fa';
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -43,13 +44,22 @@ const BookingModal = ({ isOpen, onClose, title, children }: BookingModalProps) =
   if (!isOpen) return null;
 
   return (
-    <div className="booking-modal-overlay">
-      <div className="booking-modal-container" ref={modalRef}>
-        <div className="booking-modal-header">
-          <h2>{title}</h2>
-          <button className="booking-modal-close" onClick={onClose}>×</button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
+      <div className="absolute inset-0 bg-black/20 backdrop-blur-sm"></div>
+      <div 
+        ref={modalRef}
+        className="relative bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 w-full max-w-md max-h-[90vh] overflow-y-auto animate-slideUp"
+      >
+        <div className="flex items-center justify-between p-6 border-b border-gray-200/50">
+          <h2 className="text-xl font-bold text-gray-900">{title}</h2>
+          <button 
+            onClick={onClose}
+            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
+          >
+            <FaTimes className="h-5 w-5" />
+          </button>
         </div>
-        <div className="booking-modal-content">
+        <div className="p-6">
           {children}
         </div>
       </div>
