@@ -34,8 +34,10 @@ const serviceOptions: { [key: string]: string } = {
 };
 
 const acTypeOptions = [
-  "Windows",
-  "Split"
+  "Window Type",
+  "Split Type",
+  "Portable Type",
+  "Floor Standing Type"
 ];
 
 const Booking = () => {

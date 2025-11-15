@@ -127,13 +127,10 @@ const CallUs = () => {
                 
                 <div className="space-y-4">
                   <div className="flex justify-between items-center py-3 border-b border-gray-100">
-                    <span className="font-medium text-gray-700">Monday - Friday</span>
+                    <span className="font-medium text-gray-700">Monday - Saturday</span>
                     <span className="text-blue-600 font-semibold">8:00 AM - 6:00 PM</span>
                   </div>
-                  <div className="flex justify-between items-center py-3 border-b border-gray-100">
-                    <span className="font-medium text-gray-700">Saturday</span>
-                    <span className="text-blue-600 font-semibold">8:00 AM - 5:00 PM</span>
-                  </div>
+                  
                   <div className="flex justify-between items-center py-3">
                     <span className="font-medium text-gray-700">Sunday</span>
                     <span className="text-gray-500 font-semibold">Emergency Only</span>

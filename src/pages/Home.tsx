@@ -164,6 +164,157 @@ const Home = () => (
         </div>
       </div>
     </section>
+
+    {/* Footer Section */}
+    <footer className="bg-gray-900 text-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Main Footer Content */}
+        <div className="py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {/* Company Info */}
+          <div className="lg:col-span-2">
+            <div className="mb-6">
+              <h3 className="text-2xl font-bold text-white mb-2">
+                CDOC EER Aircon
+              </h3>
+              <p className="text-lg text-cyan-400 font-semibold mb-4">
+                Cleaning & Repair Home Service
+              </p>
+              <p className="text-gray-300 leading-relaxed max-w-md">
+                Professional air conditioning services with over 10 years of experience. 
+                Our NC2/NC3 certified technicians provide reliable, efficient, and 
+                affordable solutions for all your cooling needs.
+              </p>
+            </div>
+            
+            {/* Contact Info */}
+            <div className="space-y-3">
+              <div className="flex items-center text-gray-300">
+                <span className="text-xl mr-3">📞</span>
+                <span>+63 910 399 8178</span>
+              </div>
+              <div className="flex items-center text-gray-300">
+                <span className="text-xl mr-3">📧</span>
+                <span>eeracservice@gmail.com</span>
+              </div>
+              <div className="flex items-center text-gray-300">
+                <span className="text-xl mr-3">📍</span>
+                <span>Cagayan De Oro City, Philippines</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Quick Links */}
+          <div>
+            <h4 className="text-lg font-semibold text-white mb-6">Quick Links</h4>
+            <ul className="space-y-3">
+              <li>
+                <Link 
+                  to="/" 
+                  className="text-gray-300 hover:text-cyan-400 transition-colors duration-300"
+                >
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/services" 
+                  className="text-gray-300 hover:text-cyan-400 transition-colors duration-300"
+                >
+                  Services
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/about" 
+                  className="text-gray-300 hover:text-cyan-400 transition-colors duration-300"
+                >
+                  About Us
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/booking" 
+                  className="text-gray-300 hover:text-cyan-400 transition-colors duration-300"
+                >
+                  Book Service
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/call-us" 
+                  className="text-gray-300 hover:text-cyan-400 transition-colors duration-300"
+                >
+                  Contact
+                </Link>
+              </li>
+            </ul>
+          </div>
+          
+          {/* Services */}
+          <div>
+            <h4 className="text-lg font-semibold text-white mb-6">Our Services</h4>
+            <ul className="space-y-3 text-gray-300">
+              <li className="flex items-center">
+                <span className="text-cyan-400 mr-2">•</span>
+                AC Cleaning
+              </li>
+              <li className="flex items-center">
+                <span className="text-cyan-400 mr-2">•</span>
+                AC Repair
+              </li>
+              <li className="flex items-center">
+                <span className="text-cyan-400 mr-2">•</span>
+                AC Installation
+              </li>
+              <li className="flex items-center">
+                <span className="text-cyan-400 mr-2">•</span>
+                AC Maintenance
+              </li>
+              <li className="flex items-center">
+                <span className="text-cyan-400 mr-2">•</span>
+                Emergency Service
+              </li>
+            </ul>
+          </div>
+        </div>
+        
+        {/* Bottom Footer */}
+        <div className="border-t border-gray-800 py-8">
+          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+            <div className="text-gray-400 text-sm">
+              <p>&copy; 2024 CDOC EER Aircon Cleaning & Repair. All rights reserved.</p>
+            </div>
+            
+            <div className="flex items-center space-x-6">
+              <span className="text-gray-400 text-sm">Follow us:</span>
+              <div className="flex space-x-4">
+                <a 
+                  href="https://facebook.com" 
+                  className="text-gray-400 hover:text-cyan-400 transition-colors duration-300"
+                  aria-label="Facebook"
+                >
+                  <span className="text-xl">📘</span>
+                </a>
+                <a 
+                  href="#" 
+                  className="text-gray-400 hover:text-cyan-400 transition-colors duration-300"
+                  aria-label="Instagram"
+                >
+                  <span className="text-xl">📷</span>
+                </a>
+                <a 
+                  href="#" 
+                  className="text-gray-400 hover:text-cyan-400 transition-colors duration-300"
+                  aria-label="WhatsApp"
+                >
+                  <span className="text-xl">💬</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
   </div>
 );
 
