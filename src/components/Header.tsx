@@ -128,13 +128,6 @@ const Header = () => {
             >
               Book Now
             </NavLink>
-            
-            <NavLink
-              to="/admin/login"
-              className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium transition-colors duration-300"
-            >
-              Admin
-            </NavLink>
           </div>
 
           {/* Mobile Menu Button */}
@@ -223,14 +216,6 @@ const Header = () => {
                            hover:from-blue-700 hover:to-cyan-700 transition-all duration-300 shadow-lg"
               >
                 📅 Book Appointment
-              </NavLink>
-              
-              <NavLink
-                to="/admin/login"
-                onClick={closeMenu}
-                className="block w-full text-center px-4 py-2 text-gray-600 hover:text-gray-900 font-medium transition-colors duration-300"
-              >
-                👤 Admin Login
               </NavLink>
             </div>
           </nav>

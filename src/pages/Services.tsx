@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 const Services = () => {
   const services = [
     {
@@ -105,9 +107,14 @@ const Services = () => {
               Contact us today for a free consultation and experience the difference professional AC service makes.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <button className="w-full sm:w-auto bg-linear-to-r from-blue-600 to-cyan-500 text-white px-8 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 hover:from-blue-700 hover:to-cyan-600">
-                Book Now
-              </button>
+              <Link 
+                to="/booking" 
+                className="w-full sm:w-auto border-2 border-blue-600 text-blue-600 px-8 py-4 rounded-xl font-semibold hover:bg-blue-600 hover:text-white transition-all duration-300"
+              >
+                <span className="relative z-10">Book Now</span>
+                <div className="absolute inset-0 bg-linear-to-r from-blue-50 to-cyan-50 rounded-xl opacity-0 
+                                group-hover:opacity-100 transition-opacity duration-300"></div>
+              </Link>
               <button className="w-full sm:w-auto border-2 border-blue-600 text-blue-600 px-8 py-4 rounded-xl font-semibold hover:bg-blue-600 hover:text-white transition-all duration-300">
                 Learn More
               </button>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import apiClient from '../services/api.tsx';
 import BookingModal from '../components/bookingModal.tsx';
 
@@ -112,6 +113,7 @@ const Revenue = () => {
       return services.map((s: Service) => s.type);
     } catch (error) {
       console.error("Error parsing services:", error);
+      toast.warning("Error parsing service information for appointment ID: " + appt.id);
       return [];
     }
   };
@@ -137,7 +139,7 @@ const Revenue = () => {
     });
 
     if (missingInput) {
-      alert("Please input revenue amount for all appointments before saving.");
+      toast.error("Please input revenue amount for all appointments before saving.");
       return;
     }
 
@@ -179,13 +181,13 @@ const Revenue = () => {
           setShowSuccessModal(true);
           setIsLoading(false);
         } else {
-          alert("Error saving revenue: " + (response.data.error || "Unknown error."));
+          toast.error("Error saving revenue: " + (response.data.error || "Unknown error."));
           setIsLoading(false);
         }
       })
       .catch(error => {
         console.error("Error saving revenue:", error);
-        alert("Error saving revenue. Please try again.");
+        toast.error("Error saving revenue. Please try again.");
         setIsLoading(false);
       });
   };
@@ -202,6 +204,7 @@ const Revenue = () => {
       }
     } catch (error) {
       console.error("Error parsing services:", error);
+      toast.warning("Error parsing service information");
     }
     return { service: "N/A", date: "N/A" };
   };
@@ -235,6 +238,7 @@ const Revenue = () => {
       })
       .catch(error => {
         console.error("Error fetching revenue history:", error);
+        toast.error("Error loading revenue history. Please try again.");
         setHistory([]);
         setTotalAmount(0);
         setHistoryLoading(false);

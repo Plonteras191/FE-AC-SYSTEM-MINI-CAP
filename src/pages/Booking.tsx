@@ -60,8 +60,12 @@ const Booking = () => {
       }
     })
       .then(response => {
-        const dates = response.data.map((dateStr: string) => parseISO(dateStr));
-        setGlobalAvailableDates(dates);
+        if (response.data.success && response.data.available_dates) {
+          const dates = response.data.available_dates.map((dateStr: string) => parseISO(dateStr));
+          setGlobalAvailableDates(dates);
+        } else {
+          console.error("Invalid response format:", response.data);
+        }
       })
       .catch(err => console.error("Error fetching available dates:", err));
   }, []);

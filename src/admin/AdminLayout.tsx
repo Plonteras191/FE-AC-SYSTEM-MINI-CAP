@@ -85,107 +85,133 @@ const AdminLayout = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-purple-50">
-      {/* Mobile menu button */}
-      <div className="lg:hidden">
+    <div className="h-screen overflow-hidden bg-linear-to-br from-blue-50 via-white to-purple-50">
+      {/* Mobile Header */}
+      <header className="lg:hidden flex items-center justify-between p-4 bg-white/90 backdrop-blur-md border-b border-gray-200 relative z-50">
         <button
           onClick={toggleSidebar}
-          className="fixed top-4 left-4 z-50 p-2 rounded-xl bg-white/80 backdrop-blur-sm shadow-lg border border-white/20 text-gray-600 hover:text-blue-600 transition-all duration-200 hover:scale-105"
+          className="p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors duration-200"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-      </div>
+        <div className="flex items-center space-x-2">
+          <div className="w-8 h-8 bg-linear-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+          </div>
+          <span className="text-lg font-bold bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">EER AC</span>
+        </div>
+      </header>
 
-      {/* Mobile overlay */}
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300"
-          onClick={closeSidebar}
-        />
-      )}
+      <div className="flex h-full lg:h-screen">
+        {/* Mobile Overlay */}
+        {isSidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+            onClick={closeSidebar}
+          />
+        )}
 
-      {/* Sidebar */}
-      <aside
-        className={`fixed top-0 left-0 z-40 w-72 h-screen bg-white/95 backdrop-blur-sm shadow-2xl border-r border-white/20 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
-          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-      >
-        {/* Sidebar Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200/50">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-linear-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
-            </div>
-            <div>
-              <h1 className="text-lg font-bold bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                AC System
-              </h1>
-              <p className="text-xs text-gray-500">Admin Panel</p>
+        {/* Sidebar */}
+        <aside className={`${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:relative inset-y-0 left-0 z-50 w-72 bg-white/95 backdrop-blur-md border-r border-gray-200/70 shadow-xl lg:shadow-none transition-transform duration-300 ease-in-out flex flex-col shrink-0`}>
+          
+          {/* Desktop Header */}
+          <div className="hidden lg:flex items-center p-6 border-b border-gray-200/50">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-linear-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              </div>
+              <div>
+                <h1 className="text-xl font-bold bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  EER AC
+                </h1>
+                <p className="text-sm text-gray-500">Admin Panel</p>
+              </div>
             </div>
           </div>
-          <button
-            onClick={closeSidebar}
-            className="lg:hidden p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 px-4 py-6 space-y-2">
-          {navigationItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
+          {/* Mobile Header Inside Sidebar */}
+          <div className="lg:hidden flex items-center justify-between p-4 border-b border-gray-200/50">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-linear-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              </div>
+              <div>
+                <h1 className="text-lg font-bold bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  EER AC
+                </h1>
+                <p className="text-xs text-gray-500">Admin Panel</p>
+              </div>
+            </div>
+            <button
               onClick={closeSidebar}
-              className={({ isActive }) =>
-                `flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group ${
-                  isActive
-                    ? 'bg-linear-to-r from-blue-500 to-purple-600 text-white shadow-lg transform scale-[1.02]'
-                    : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50 hover:scale-[1.01]'
-                }`
-              }
+              className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
             >
-              {({ isActive }) => (
-                <>
-                  <span className={isActive ? 'text-blue-200' : 'text-gray-400 group-hover:text-blue-500'}>
-                    {item.icon}
-                  </span>
-                  <span>{item.label}</span>
-                </>
-              )}
-            </NavLink>
-          ))}
-        </nav>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
 
-        {/* Sidebar Footer */}
-        <div className="p-4 border-t border-gray-200/50">
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-linear-to-r from-red-500 to-red-600 text-white rounded-xl font-medium shadow-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            <span>Logout</span>
-          </button>
-        </div>
-      </aside>
+          {/* Navigation */}
+          <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
+            {navigationItems.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                onClick={closeSidebar}
+                className={({ isActive }) =>
+                  `flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group ${
+                    isActive
+                      ? 'bg-linear-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/25'
+                      : 'text-gray-700 hover:text-blue-600 hover:bg-blue-50/70 hover:shadow-sm'
+                  }`
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    <span className={`${isActive ? 'text-blue-100' : 'text-gray-400 group-hover:text-blue-500'} transition-colors duration-200`}>
+                      {item.icon}
+                    </span>
+                    <span className="font-medium">{item.label}</span>
+                  </>
+                )}
+              </NavLink>
+            ))}
+          </nav>
 
-      {/* Main Content */}
-      <main className="lg:ml-72 min-h-screen">
-        <div className="p-4 sm:p-6 lg:p-8 pt-20 lg:pt-8">
-          <PageWrapper>
-            <Outlet />
-          </PageWrapper>
-        </div>
-      </main>
+          {/* Sidebar Footer */}
+          <div className="p-4 border-t border-gray-200/50">
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-linear-to-r from-red-500 to-red-600 text-white rounded-xl font-medium shadow-lg shadow-red-500/25 hover:shadow-red-500/40 hover:from-red-600 hover:to-red-700 transition-all duration-200"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              <span>Logout</span>
+            </button>
+          </div>
+        </aside>
+
+        {/* Main Content Area */}
+        <main className="flex-1 min-w-0 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto">
+            <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 py-4 lg:py-6">
+              <PageWrapper>
+                <Outlet />
+              </PageWrapper>
+            </div>
+          </div>
+        </main>
+      </div>
     </div>
   );
 };

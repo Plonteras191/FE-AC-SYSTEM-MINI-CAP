@@ -1,5 +1,7 @@
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './routes/ProtectedRoute';
@@ -44,6 +46,7 @@ const AnimatedRoutes = () => {
         {/* Protected Admin Routes nested under AdminLayout */}
         <Route element={<ProtectedRoute />}>
           <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<PageWrapper><Dashboard /></PageWrapper>} />
             <Route path="dashboard" element={<PageWrapper><Dashboard /></PageWrapper>} />
             <Route path="appointments" element={<PageWrapper><AdminAppointments /></PageWrapper>} />
             <Route path="admin-booking" element={<PageWrapper><AdminBooking /></PageWrapper>} />
@@ -58,10 +61,25 @@ const AnimatedRoutes = () => {
 };
 
 const App = () => {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
   return (
     <AuthProvider>
-      <Header />
+      {!isAdminRoute && <Header />}
       <AnimatedRoutes />
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </AuthProvider>
   );
 };
