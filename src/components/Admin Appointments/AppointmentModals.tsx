@@ -1,4 +1,4 @@
-import Modal from './Modal';
+import Modal from '../Modal';
 
 interface AppointmentModalsProps {
   isConfirmModalOpen: boolean;

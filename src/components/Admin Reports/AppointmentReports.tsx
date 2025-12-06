@@ -1,5 +1,5 @@
 import { FaCheckCircle, FaClock, FaBan, FaCalendarAlt } from 'react-icons/fa';
-import TechniciansList from './TechniciansList.tsx';
+import TechniciansList from '../TechniciansList';
 
 // Type definitions
 interface Service {

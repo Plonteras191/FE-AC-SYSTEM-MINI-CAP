@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
 import { parseISO, format } from 'date-fns';
 import "react-datepicker/dist/react-datepicker.css";
-import BookingModal from '../components/bookingModal';
+import BookingModal from '../components/Admin Booking/bookingModal';
 import apiClient from '../services/api';
 
 // Type definitions

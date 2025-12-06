@@ -1,4 +1,4 @@
-import AppointmentCard from './AppointmentCard';
+import AppointmentCard from '../AppointmentCard';
 
 interface AppointmentListProps {
   activeTab: string;

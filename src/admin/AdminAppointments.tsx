@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import PageWrapper from '../components/PageWrapper.tsx';
 import { appointmentsApi } from '../services/api.tsx';
 import { toast } from 'react-toastify';
-import AppointmentList from '../components/AppointmentList.tsx';
-import AppointmentModals from '../components/AppointmentModals.tsx';
-import PaginationControls from '../components/PaginationControls.tsx';
+import AppointmentList from '../components/Admin Appointments/AppointmentList.tsx';
+import AppointmentModals from '../components/Admin Appointments/AppointmentModals.tsx';
+import PaginationControls from '../components/Admin Appointments/PaginationControls.tsx';
 
 // Type definitions
 interface Service {

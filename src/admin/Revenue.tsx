@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import apiClient from '../services/api.tsx';
-import BookingModal from '../components/bookingModal.tsx';
+import BookingModal from '../components/Admin Booking/bookingModal.tsx';
 
 interface Service {
   type: string;

@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react';
 import { FaCalendarAlt } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
 import apiClient, { appointmentsApi } from '../services/api.tsx';
-import ReportStats from '../components/ReportStats.tsx';
-import ReportTabs from '../components/ReportTabs.tsx';
-import RevenueHistory from '../components/RevenueHistory.tsx';
-import AppointmentReports from '../components/AppointmentReports.tsx';
-import ExportControls from '../components/ExportControls.tsx';
+import ReportStats from '../components/Admin Reports/ReportStats.tsx';
+import ReportTabs from '../components/Admin Reports/ReportTabs.tsx';
+import RevenueHistory from '../components/Admin Reports/RevenueHistory.tsx';
+import AppointmentReports from '../components/Admin Reports/AppointmentReports.tsx';
+import ExportControls from '../components/Admin Reports/ExportControls.tsx';
 
 interface Service {
   type: string;
