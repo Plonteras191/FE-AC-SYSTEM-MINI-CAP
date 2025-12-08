@@ -1,34 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import PageWrapper from '../components/PageWrapper.tsx';
 import { appointmentsApi } from '../services/api.tsx';
-import { toast } from 'react-toastify';
 import AppointmentList from '../components/Admin Appointments/AppointmentList.tsx';
 import AppointmentModals from '../components/Admin Appointments/AppointmentModals.tsx';
 import PaginationControls from '../components/Admin Appointments/PaginationControls.tsx';
-
-// Type definitions
-interface Service {
-  type: string;
-  date: string;
-  ac_types?: string[];
-}
-
-interface Appointment {
-  id: number | string;
-  status?: string;
-  services?: string | Service[];
-  technician_names?: string[];
-}
-
-interface Technician {
-  id: number;
-  name: string;
-}
+import type { Service, Technician } from '../types/appointment';
+import { 
+  useAppointmentData, 
+  useAppointmentActions, 
+  useServiceParser 
+} from '../hooks/useAppointments';
 
 const AdminAppointments = () => {
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [acceptedAppointments, setAcceptedAppointments] = useState<Appointment[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  // Use custom hooks for data and actions
+  const {
+    appointments,
+    acceptedAppointments,
+    loadingStates,
+    fetchAppointments,
+    setLoadingStates
+  } = useAppointmentData();
+
+  const {
+    handleReject,
+    handleAccept,
+    handleComplete,
+    handleReschedule
+  } = useAppointmentActions(fetchAppointments, setLoadingStates);
+
+  const {
+    parseServices,
+    parseServicesFormatted,
+    parseAcTypes
+  } = useServiceParser();
+
   const [availableTechnicians, setAvailableTechnicians] = useState<Technician[]>([]);
   
   // Modal states
@@ -48,40 +53,10 @@ const AdminAppointments = () => {
   const [activeTab, setActiveTab] = useState<'pending' | 'accepted'>('pending');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage, setItemsPerPage] = useState<number>(5);
-  
-
-
-  useEffect(() => {
-    // Fetch all appointments and technicians from Laravel backend
+    useEffect(() => {
     fetchAppointments();
     fetchTechnicians();
-  }, []);
-
-  const fetchAppointments = () => {
-    setIsLoading(true);
-    appointmentsApi.getAll()
-      .then(response => {
-        let data = response.data;
-        if (!Array.isArray(data)) data = [data];
-        
-        // Filter to show only pending appointments
-        const pending = data.filter((appt: Appointment) => !appt.status || appt.status.toLowerCase() === 'pending');
-        setAppointments(pending);
-        
-        // Filter to show only accepted appointments (pending for completion)
-        const accepted = data.filter((appt: Appointment) => 
-          appt.status && appt.status.toLowerCase() === 'accepted'
-        );
-        setAcceptedAppointments(accepted);
-      })
-      .catch(error => {
-        console.error("Error fetching appointments:", error);
-        toast.error("Failed to load appointments");
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  };
+  }, [fetchAppointments]);
 
   const fetchTechnicians = async () => {
     try {
@@ -89,21 +64,6 @@ const AdminAppointments = () => {
       setAvailableTechnicians(response.data);
     } catch (error) {
       console.error("Error fetching technicians:", error);
-    }
-  };
-
-  // Delete (reject) appointment
-  const handleCancelAppointment = async (id: number | string) => {
-    try {
-      setIsLoading(true);
-      await appointmentsApi.delete(id);
-      setAppointments(prev => prev.filter(appt => appt.id !== id));
-      toast.success("Appointment rejected successfully and notification email sent");
-    } catch (error) {
-      console.error("Error deleting appointment:", error);
-      toast.error("Failed to reject appointment");
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -125,21 +85,22 @@ const AdminAppointments = () => {
   const openCompleteModal = (id: number | string) => {
     setSelectedAppointmentId(id);
     setIsCompleteModalOpen(true);
-  };  // Open modal to reschedule a service
+  };
+
+  // Open modal to reschedule a service
   const openRescheduleModal = (id: number | string, service: Service) => {
     setSelectedAppointmentId(id);
     setSelectedService(service.type);
-    // Format the date to YYYY-MM-DD, handling both date-only and datetime formats
     const serviceDate = service.date ? new Date(service.date) : new Date();
     const formattedDate = serviceDate.toISOString().split('T')[0];
     setNewServiceDate(formattedDate);
     setIsRescheduleModalOpen(true);
   };
 
-  // Confirm rejection and delete appointment
+  // Confirm rejection
   const handleConfirmReject = () => {
     if (selectedAppointmentId !== null) {
-      handleCancelAppointment(selectedAppointmentId);
+      handleReject(selectedAppointmentId);
     }
     setIsConfirmModalOpen(false);
     setSelectedAppointmentId(null);
@@ -162,7 +123,7 @@ const AdminAppointments = () => {
     if (technicianName && !selectedTechnicians.includes(technicianName)) {
       setSelectedTechnicians(prev => [...prev, technicianName]);
     }
-    e.target.value = ''; // Reset dropdown
+    e.target.value = '';
   };
 
   // Remove selected technician
@@ -187,102 +148,26 @@ const AdminAppointments = () => {
     }
   };
 
-
-
-  // Accept appointment by sending a POST request with action=accept
+  // Accept appointment wrapper
   const handleAcceptAppointment = async (id: number | string) => {
-    try {
-      setIsLoading(true);
-      const payload = {
-        technician_names: selectedTechnicians
-      };
-      const response = await appointmentsApi.accept(id, payload);
-      if (
-        response.data &&
-        response.data.status &&
-        response.data.status.toLowerCase() === 'accepted'
-      ) {
-        // If appointment accepted successfully, refresh data
-        fetchAppointments();
-        toast.success("Appointment accepted and confirmation email sent.");
-      }
-    } catch (error: any) {
-      console.error("Error accepting appointment:", error);
-      if (error.response && error.response.data && error.response.data.error) {
-        toast.error(error.response.data.error);
-      } else {
-        toast.error("Failed to accept appointment");
-      }
-    } finally {
-      setIsLoading(false);
-      setIsAcceptModalOpen(false);
-      setSelectedAppointmentId(null);
-      setSelectedTechnicians([]);
-      setCustomTechnicianInput('');
-    }
+    await handleAccept(id, selectedTechnicians);
+    setIsAcceptModalOpen(false);
+    setSelectedAppointmentId(null);
+    setSelectedTechnicians([]);
+    setCustomTechnicianInput('');
   };
 
-  // Complete appointment: update its status to "Completed"
+  // Complete appointment wrapper
   const completeAppointment = (id: number | string) => {
-    setIsLoading(true);
-    appointmentsApi.complete(id)
-      .then(response => {
-        const updatedAppointment = response.data;
-        
-        // Store the completed appointment in localStorage for later processing in Revenue component
-        const stored = localStorage.getItem('completedAppointments');
-        const completedAppointments = stored ? JSON.parse(stored) : [];
-        
-        // Check if this appointment is already in the completed list
-        const exists = completedAppointments.some((app: any) => app.id === updatedAppointment.id);
-        if (!exists) {
-          completedAppointments.push(updatedAppointment);
-          localStorage.setItem('completedAppointments', JSON.stringify(completedAppointments));
-        }
-
-        // Refresh appointments
-        fetchAppointments();
-        toast.success("Appointment marked as completed");
-      })
-      .catch(error => {
-        console.error("Error completing appointment:", error);
-        toast.error("Failed to complete appointment");
-      })
-      .finally(() => {
-        setIsLoading(false);
-        setIsCompleteModalOpen(false);
-        setSelectedAppointmentId(null);
-      });
+    handleComplete(id);
+    setIsCompleteModalOpen(false);
+    setSelectedAppointmentId(null);
   };
-  // Confirm reschedule of a service
-  const confirmReschedule = async () => {
-    if (!selectedAppointmentId || !selectedService || !newServiceDate) {
-      toast.error('Please select a new date');
-      return;
-    }
 
-    const formattedDate = new Date(newServiceDate).toISOString().split('T')[0];
-    const payload = { 
-      service_name: selectedService, 
-      new_date: formattedDate // Send date in YYYY-MM-DD format
-    };
-    
-    try {
-      setIsLoading(true);
-      const response = await appointmentsApi.reschedule(selectedAppointmentId, payload);
-      if (response.data && !response.data.error) {
-        setAppointments(prev =>
-          prev.map(appt => (appt.id === selectedAppointmentId ? response.data : appt))
-        );
-        toast.success("Service rescheduled successfully");
-      } else {
-        toast.error(response.data.error || "Failed to reschedule service");
-      }
-    } catch (error: any) {
-      console.error("Error rescheduling service:", error);
-      toast.error("Failed to reschedule service");
-    } finally {
-      setIsLoading(false);
+  // Confirm reschedule
+  const confirmReschedule = async () => {
+    if (selectedAppointmentId && selectedService && newServiceDate) {
+      await handleReschedule(selectedAppointmentId, selectedService, newServiceDate);
       setIsRescheduleModalOpen(false);
       setSelectedAppointmentId(null);
       setSelectedService(null);
@@ -290,43 +175,10 @@ const AdminAppointments = () => {
     }
   };
 
-  // Utility function to parse services JSON string
-  const parseServices = (servicesStr: string): Service[] => {
-    try {
-      return JSON.parse(servicesStr);
-    } catch (error) {
-      console.error("Error parsing services:", error);
-      return [];
-    }
-  };
-
-  // Utility function to parse services JSON string with numbering
-  const parseServicesFormatted = (servicesStr: string): string => {
-    try {
-      const services = JSON.parse(servicesStr);
-      return services.map((s: Service, index: number) => `${index + 1}. ${s.type} on ${s.date}`).join(' | ');
-    } catch (error) {
-      console.error("Error parsing services:", error);
-      return 'N/A';
-    }
-  };
-
-  // Utility function to parse AC types from the services JSON string with proper numbering per service
-  const parseAcTypes = (servicesStr: string): string => {
-    try {
-      const services = JSON.parse(servicesStr);
-      return services.map((s: Service, index: number) => {
-        if (s.ac_types && s.ac_types.length > 0) {
-          // Prefix each AC type with the service number
-          return s.ac_types.map((ac: string) => `${index + 1}. ${ac}`).join(', ');
-        } else {
-          return 'N/A';
-        }
-      }).join(' | ');
-    } catch (error) {
-      console.error("Error parsing AC types:", error);
-      return 'N/A';
-    }
+  // Handle tab change with pagination reset
+  const handleTabChange = (tab: 'pending' | 'accepted') => {
+    setActiveTab(tab);
+    setCurrentPage(1); // Reset pagination when switching tabs
   };
 
   // Pagination handlers
@@ -336,7 +188,7 @@ const AdminAppointments = () => {
 
   const handleItemsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setItemsPerPage(Number(e.target.value));
-    setCurrentPage(1); // Reset to first page when changing items per page
+    setCurrentPage(1);
   };
 
   // Calculate pagination for current view
@@ -352,14 +204,22 @@ const AdminAppointments = () => {
     (activeTab === 'pending' ? appointments.length : acceptedAppointments.length) / itemsPerPage
   );
 
+  // Check if loading any operation
+  const isAnyLoading = loadingStates.fetching || 
+    Object.values(loadingStates.accepting).some(Boolean) ||
+    Object.values(loadingStates.completing).some(Boolean) ||
+    Object.values(loadingStates.rejecting).some(Boolean) ||
+    Object.values(loadingStates.rescheduling).some(Boolean);
+
   return (
     <PageWrapper>
-      <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-purple-50 p-4 sm:p-6 lg:p-8">
-        <div className="max-w-7xl mx-auto space-y-6">
-          {/* Header Section */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6 sm:p-8">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="flex items-center space-x-4">
+      <div className="w-full h-full bg-linear-to-br from-blue-50 via-white to-purple-50">
+        <div className="p-4 sm:p-6 lg:p-8">
+          <div className="w-full mx-auto space-y-6">
+            {/* Header Section */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-4 sm:p-6 lg:p-8">
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex items-center space-x-4">
                 <div className="bg-linear-to-r from-blue-600 to-purple-600 p-3 rounded-xl shadow-lg">
                   <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a4 4 0 118 0v4M3 7h18M5 21h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -372,7 +232,7 @@ const AdminAppointments = () => {
               </div>
               
               {/* Loading Indicator */}
-              {isLoading && (
+              {isAnyLoading && (
                 <div className="flex items-center space-x-2 bg-blue-50 px-4 py-2 rounded-full border border-blue-200">
                   <svg className="animate-spin h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -441,7 +301,7 @@ const AdminAppointments = () => {
             <div className="border-b border-gray-200 bg-gray-50/50">
               <nav className="flex space-x-8 px-6 sm:px-8" aria-label="Tabs">
                 <button
-                  onClick={() => setActiveTab('pending')}
+                  onClick={() => handleTabChange('pending')}
                   className={`py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
                     activeTab === 'pending'
                       ? 'border-orange-500 text-orange-600 bg-orange-50/50 rounded-t-lg'
@@ -464,7 +324,7 @@ const AdminAppointments = () => {
                 </button>
                 
                 <button
-                  onClick={() => setActiveTab('accepted')}
+                  onClick={() => handleTabChange('accepted')}
                   className={`py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
                     activeTab === 'accepted'
                       ? 'border-green-500 text-green-600 bg-green-50/50 rounded-t-lg'
@@ -503,7 +363,7 @@ const AdminAppointments = () => {
                 appointments={appointments}
                 acceptedAppointments={acceptedAppointments}
                 getPaginatedData={getPaginatedData}
-                isLoading={isLoading}
+                loadingStates={loadingStates}
                 openRejectModal={openRejectModal}
                 openAcceptModal={openAcceptModal}
                 openRescheduleModal={openRescheduleModal}
@@ -514,11 +374,10 @@ const AdminAppointments = () => {
               />
             </div>
           </div>
-        </div>
 
-        {/* Modals */}
-        <AppointmentModals
-          isConfirmModalOpen={isConfirmModalOpen}
+          {/* Modals */}
+          <AppointmentModals
+            isConfirmModalOpen={isConfirmModalOpen}
           isAcceptModalOpen={isAcceptModalOpen}
           isCompleteModalOpen={isCompleteModalOpen}
           isRescheduleModalOpen={isRescheduleModalOpen}
@@ -530,7 +389,7 @@ const AdminAppointments = () => {
           setCustomTechnicianInput={setCustomTechnicianInput}
           selectedTechnicians={selectedTechnicians}
           availableTechnicians={availableTechnicians}
-          isLoading={isLoading}
+          loadingStates={loadingStates}
           handleConfirmReject={handleConfirmReject}
           handleCancelModal={handleCancelModal}
           handleAcceptAppointment={handleAcceptAppointment}
@@ -541,6 +400,8 @@ const AdminAppointments = () => {
           confirmReschedule={confirmReschedule}
           completeAppointment={completeAppointment}
         />
+        </div>
+      </div>
       </div>
     </PageWrapper>
   );

@@ -1,8 +1,13 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import PageWrapper from '../components/PageWrapper.tsx';
 import apiClient, { appointmentsApi } from '../services/api.tsx';
-import { FaCalendarAlt, FaBell, FaChartLine, FaCheck, FaClock, FaUser } from 'react-icons/fa';
+import { FaCalendarAlt, FaBell, FaChartLine, FaCheck, FaClock, FaUser, FaSync, FaExclamationTriangle } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
+
+// Constants
+const POLLING_INTERVAL_MS = 2 * 60 * 1000; // 2 minutes
+const MAX_NOTIFICATIONS_DISPLAY = 9;
+const LOCAL_STORAGE_KEY = 'processedAppointmentIds';
 
 interface Appointment {
   id: number;
@@ -19,6 +24,38 @@ interface Notification {
   appointmentId: number;
 }
 
+interface RevenueEntry {
+  revenue_date: string;
+  total_revenue: string | number;
+}
+
+// Utility functions for localStorage with error handling
+const saveToLocalStorage = (key: string, value: any): void => {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    console.error(`Failed to save ${key} to localStorage:`, error);
+  }
+};
+
+const loadFromLocalStorage = (key: string, defaultValue: any): any => {
+  try {
+    const item = localStorage.getItem(key);
+    return item ? JSON.parse(item) : defaultValue;
+  } catch (error) {
+    console.error(`Failed to load ${key} from localStorage:`, error);
+    return defaultValue;
+  }
+};
+
+// Sanitize user input to prevent XSS
+const sanitizeString = (str: string): string => {
+  // Create a temporary element to use browser's built-in HTML parser
+  const temp = document.createElement('div');
+  temp.textContent = str;
+  return temp.innerHTML.trim();
+};
+
 const Dashboard = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [currentMonthRevenue, setCurrentMonthRevenue] = useState<number>(0);
@@ -26,6 +63,9 @@ const Dashboard = () => {
   const [showNotifications, setShowNotifications] = useState<boolean>(false);
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [processedAppointmentIds, setProcessedAppointmentIds] = useState<Set<number>>(new Set());
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const notificationRef = useRef<HTMLDivElement>(null);
 
   // Handle clicks outside notification panel to close it
@@ -41,39 +81,46 @@ const Dashboard = () => {
 
   // Load processed appointment IDs from localStorage on component mount
   useEffect(() => {
-    try {
-      const savedIds = localStorage.getItem('processedAppointmentIds');
-      if (savedIds) {
-        setProcessedAppointmentIds(new Set(JSON.parse(savedIds)));
-      }
-    } catch (error) {
-      console.error("Error loading processed appointment IDs:", error);
+    const savedIds = loadFromLocalStorage(LOCAL_STORAGE_KEY, []);
+    if (Array.isArray(savedIds)) {
+      setProcessedAppointmentIds(new Set(savedIds));
     }
   }, []);
 
   // Fetch all necessary data when component mounts
-  useEffect(() => {
-    const fetchAllData = async () => {
-      try {
-        const appointmentsData = await fetchAppointments();
-        await fetchRevenueHistory();
-        
-        // Check for new pending appointments
-        checkForNewAppointments(appointmentsData);
-      } catch (error) {
-        console.error("Error fetching dashboard data:", error);
+  const fetchAllData = useCallback(async (isManualRefresh = false) => {
+    try {
+      if (isManualRefresh) {
+        setIsRefreshing(true);
+      } else {
+        setIsLoading(true);
       }
-    };
-
-    fetchAllData();
-    // Refresh data every 2 minutes
-    const interval = setInterval(fetchAllData, 120000);
-    return () => clearInterval(interval);
+      setError(null);
+      
+      const appointmentsData = await fetchAppointments();
+      await fetchRevenueHistory();
+      
+      // Check for new pending appointments
+      checkForNewAppointments(appointmentsData);
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+      setError("Failed to load dashboard data. Please try again.");
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
   }, []);
 
+  useEffect(() => {
+    fetchAllData();
+    // Refresh data every 2 minutes
+    const interval = setInterval(() => fetchAllData(), POLLING_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, [fetchAllData]);
+
   // Check for new appointments and create notifications
-  const checkForNewAppointments = (newAppointments: Appointment[]): void => {
-    if (!newAppointments) return;
+  const checkForNewAppointments = useCallback((newAppointments: Appointment[]): void => {
+    if (!newAppointments || !Array.isArray(newAppointments)) return;
     
     // Filter for new pending appointments that weren't already processed
     const newPendingAppointments = newAppointments.filter(
@@ -87,7 +134,7 @@ const Dashboard = () => {
       const newNotifications = newPendingAppointments.map((app: Appointment) => ({
         id: `notif-${app.id}`,
         title: 'New Pending Appointment',
-        message: `${app.name} has requested an appointment`,
+        message: `${sanitizeString(app.name)} has requested an appointment`,
         time: new Date().toISOString(),
         appointmentId: app.id,
         read: false
@@ -113,14 +160,17 @@ const Dashboard = () => {
       });
       
       // Add the processed appointment IDs to avoid duplicates
-      const updatedProcessedIds = new Set(processedAppointmentIds);
-      newPendingAppointments.forEach((app: Appointment) => updatedProcessedIds.add(app.id));
-      setProcessedAppointmentIds(updatedProcessedIds);
-      
-      // Save processed IDs to localStorage
-      localStorage.setItem('processedAppointmentIds', JSON.stringify([...updatedProcessedIds]));
+      setProcessedAppointmentIds(prev => {
+        const updatedProcessedIds = new Set(prev);
+        newPendingAppointments.forEach((app: Appointment) => updatedProcessedIds.add(app.id));
+        
+        // Save processed IDs to localStorage
+        saveToLocalStorage(LOCAL_STORAGE_KEY, [...updatedProcessedIds]);
+        
+        return updatedProcessedIds;
+      });
     }
-  };
+  }, [processedAppointmentIds]);
 
   // Update unread count whenever notifications change
   useEffect(() => {
@@ -129,33 +179,44 @@ const Dashboard = () => {
   }, [notifications]);
 
   // Fetch all appointments
-  const fetchAppointments = async () => {
+  const fetchAppointments = async (): Promise<Appointment[]> => {
     try {
       const response = await appointmentsApi.getAll();
       let data = response.data;
       if (!Array.isArray(data)) data = [data];
-      setAppointments(data);
-      return data;
+      
+      // Validate and sanitize appointment data
+      const validatedData = data.map((app: any) => ({
+        id: Number(app.id) || 0,
+        name: sanitizeString(String(app.name || 'Unknown')),
+        status: app.status ? sanitizeString(String(app.status)) : undefined
+      }));
+      
+      setAppointments(validatedData);
+      return validatedData;
     } catch (error) {
       console.error("Error fetching appointments:", error);
-      return [];
+      throw error;
     }
   };
 
   // Fetch revenue history
-  const fetchRevenueHistory = async () => {
+  const fetchRevenueHistory = async (): Promise<RevenueEntry[]> => {
     try {
       const response = await apiClient.get('/revenue-history');
       if (response.data && response.data.history) {
-        const history = response.data.history;
+        const history: RevenueEntry[] = response.data.history;
         // Calculate current month revenue
         const currentMonth = new Date().getMonth();
         const currentYear = new Date().getFullYear();
         
-        const monthlyRevenue = history.reduce((sum: number, entry: any) => {
+        const monthlyRevenue = history.reduce((sum: number, entry: RevenueEntry) => {
           const entryDate = new Date(entry.revenue_date);
           if (entryDate.getMonth() === currentMonth && entryDate.getFullYear() === currentYear) {
-            return sum + parseFloat(entry.total_revenue);
+            const revenue = typeof entry.total_revenue === 'string' 
+              ? parseFloat(entry.total_revenue) 
+              : entry.total_revenue;
+            return sum + (isNaN(revenue) ? 0 : revenue);
           }
           return sum;
         }, 0);
@@ -168,13 +229,12 @@ const Dashboard = () => {
       }
     } catch (error) {
       console.error("Error fetching revenue history:", error);
-      setCurrentMonthRevenue(0);
-      return [];
+      throw error;
     }
   };
 
-  // Calculate appointment statistics for the summary cards
-  const getAppointmentStats = () => {
+  // Calculate appointment statistics for the summary cards (memoized)
+  const stats = useMemo(() => {
     const total = appointments.length;
     const pending = appointments.filter(a => a.status && a.status.toLowerCase() === 'pending').length;
     const accepted = appointments.filter(a => a.status && a.status.toLowerCase() === 'accepted').length;
@@ -182,30 +242,30 @@ const Dashboard = () => {
     const rejected = appointments.filter(a => a.status && a.status.toLowerCase() === 'rejected').length;
     
     return { total, pending, accepted, completed, rejected };
-  };
+  }, [appointments]);
 
   // Handle notification click - just mark as read
-  const handleNotificationClick = (notification: Notification): void => {
+  const handleNotificationClick = useCallback((notification: Notification): void => {
     // Mark notification as read
     setNotifications(prev => 
       prev.map(n => 
         n.id === notification.id ? {...n, read: true} : n
       )
     );
-  };
+  }, []);
 
   // Clear all notifications
-  const clearAllNotifications = () => {
+  const clearAllNotifications = useCallback(() => {
     setNotifications([]);
     setUnreadCount(0);
     setShowNotifications(false);
     
     // Note: We don't clear processedAppointmentIds here
     // to prevent the same notifications from appearing again
-  };
+  }, []);
 
-  // Format time for notifications
-  const formatNotificationTime = (date: string): string => {
+  // Format time for notifications (memoized)
+  const formatNotificationTime = useCallback((date: string): string => {
     const now = new Date();
     const notifDate = new Date(date);
     const diffMinutes = Math.floor((now.getTime() - notifDate.getTime()) / (1000 * 60));
@@ -217,12 +277,25 @@ const Dashboard = () => {
     if (diffHours < 24) return `${diffHours}h ago`;
     
     return notifDate.toLocaleDateString();
-  };
+  }, []);
 
-  // Get current month name
-  const getCurrentMonthName = () => {
+  // Get current month name (memoized)
+  const currentMonthName = useMemo(() => {
     return new Date().toLocaleString('default', { month: 'long' });
-  };
+  }, []);
+
+  // Format revenue (memoized)
+  const formattedRevenue = useMemo(() => {
+    return currentMonthRevenue.toLocaleString('en-US', { 
+      minimumFractionDigits: 2, 
+      maximumFractionDigits: 2 
+    });
+  }, [currentMonthRevenue]);
+
+  // Manual refresh handler
+  const handleRefresh = useCallback(() => {
+    fetchAllData(true);
+  }, [fetchAllData]);
 
   // Sync notifications with pending appointments (one time setup)
   useEffect(() => {
@@ -243,9 +316,21 @@ const Dashboard = () => {
         checkForNewAppointments(appointments);
       }
     }
-  }, [appointments.length]);
+  }, [appointments.length, checkForNewAppointments]);
 
-  const stats = getAppointmentStats();
+  // Loading state
+  if (isLoading) {
+    return (
+      <PageWrapper>
+        <div className="flex items-center justify-center min-h-screen bg-gray-50">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600 font-medium">Loading dashboard...</p>
+          </div>
+        </div>
+      </PageWrapper>
+    );
+  }
 
   return (
     <PageWrapper>
@@ -263,6 +348,16 @@ const Dashboard = () => {
               
               {/* Right side controls */}
               <div className="flex items-center gap-2 sm:gap-4">
+                {/* Refresh Button */}
+                <button
+                  onClick={handleRefresh}
+                  disabled={isRefreshing}
+                  className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Refresh dashboard"
+                >
+                  <FaSync className={`h-5 w-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+                </button>
+                
                 {/* Date display */}
                 <div className="hidden sm:flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg">
                   <FaCalendarAlt className="h-4 w-4 text-gray-600" />
@@ -284,9 +379,9 @@ const Dashboard = () => {
                   >
                     <FaBell className="h-5 w-5" />
                     {unreadCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
-                        {unreadCount > 9 ? '9+' : unreadCount}
-                      </span>
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
+                      {unreadCount > MAX_NOTIFICATIONS_DISPLAY ? `${MAX_NOTIFICATIONS_DISPLAY}+` : unreadCount}
+                    </span>
                     )}
                   </button>
                   
@@ -354,6 +449,28 @@ const Dashboard = () => {
         
         {/* Main Content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Error Message */}
+          {error && (
+            <motion.div 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg shadow-sm"
+            >
+              <div className="flex items-start gap-3">
+                <FaExclamationTriangle className="h-5 w-5 text-red-600 mt-0.5 shrink-0" />
+                <div className="flex-1">
+                  <h3 className="text-sm font-semibold text-red-800 mb-1">Error Loading Dashboard</h3>
+                  <p className="text-sm text-red-700">{error}</p>
+                  <button
+                    onClick={handleRefresh}
+                    className="mt-2 text-sm font-medium text-red-800 hover:text-red-900 underline"
+                  >
+                    Try Again
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
           {/* Stats Overview */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 lg:gap-6 mb-8">
             {/* Total Appointments Card */}
@@ -463,9 +580,9 @@ const Dashboard = () => {
             >
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">{getCurrentMonthName()} Revenue</p>
+                  <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">{currentMonthName} Revenue</p>
                   <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
-                    ₱{currentMonthRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    ₱{formattedRevenue}
                   </h3>
                 </div>
                 <div className="flex items-center justify-center w-12 h-12 bg-sky-100 rounded-lg">

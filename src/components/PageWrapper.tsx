@@ -33,7 +33,7 @@ const PageWrapper = ({ children }: PageWrapperProps) => {
       exit="out"
       variants={pageVariants}
       transition={pageTransition}
-      style={{ minHeight: '100vh' }}
+      className="w-full h-full"
     >
       {children}
     </motion.div>

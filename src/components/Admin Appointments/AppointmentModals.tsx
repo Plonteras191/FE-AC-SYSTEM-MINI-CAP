@@ -1,28 +1,29 @@
 import Modal from '../Modal';
+import type { Technician, LoadingStates } from '../../types/appointment';
 
 interface AppointmentModalsProps {
   isConfirmModalOpen: boolean;
   isAcceptModalOpen: boolean;
   isCompleteModalOpen: boolean;
   isRescheduleModalOpen: boolean;
-  selectedAppointmentId: any;
-  selectedService: any;
+  selectedAppointmentId: number | string | null;
+  selectedService: string | null;
   newServiceDate: string;
   setNewServiceDate: (date: string) => void;
   customTechnicianInput: string;
   setCustomTechnicianInput: (input: string) => void;
   selectedTechnicians: string[];
-  availableTechnicians: any[];
-  isLoading: boolean;
+  availableTechnicians: Technician[];
+  loadingStates: LoadingStates;
   handleConfirmReject: () => void;
   handleCancelModal: () => void;
-  handleAcceptAppointment: (id: any) => void;
-  handleTechnicianSelect: (e: any) => void;
-  handleCustomTechnicianKeyPress: (e: any) => void;
+  handleAcceptAppointment: (id: number | string) => void;
+  handleTechnicianSelect: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  handleCustomTechnicianKeyPress: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   addCustomTechnician: () => void;
   removeTechnician: (name: string) => void;
   confirmReschedule: () => void;
-  completeAppointment: (id: any) => void;
+  completeAppointment: (id: number | string) => void;
 }
 
 const AppointmentModals = ({
@@ -38,7 +39,7 @@ const AppointmentModals = ({
   setCustomTechnicianInput,
   selectedTechnicians,
   availableTechnicians,
-  isLoading,
+  loadingStates,
   handleConfirmReject,
   handleCancelModal,
   handleAcceptAppointment,
@@ -49,6 +50,8 @@ const AppointmentModals = ({
   confirmReschedule,
   completeAppointment
 }: AppointmentModalsProps) => {
+  const isAccepting = selectedAppointmentId ? loadingStates.accepting[selectedAppointmentId] : false;
+  const isRescheduling = selectedAppointmentId ? loadingStates.rescheduling[selectedAppointmentId] : false;
   return (
     <>
       {/* Reject Modal */}
@@ -105,7 +108,7 @@ const AppointmentModals = ({
                         className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
                         <option value="">-- Select a technician --</option>
-                        {availableTechnicians.map((tech: any) => (
+                        {availableTechnicians.map((tech: Technician) => (
                           <option key={tech.id} value={tech.name}>
                             {tech.name}
                           </option>
@@ -166,11 +169,11 @@ const AppointmentModals = ({
               {/* Actions */}
               <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse space-y-3 sm:space-y-0 sm:space-x-3 sm:space-x-reverse">
                 <button 
-                  onClick={() => handleAcceptAppointment(selectedAppointmentId)}
-                  disabled={isLoading}
+                  onClick={() => handleAcceptAppointment(selectedAppointmentId!)}
+                  disabled={isAccepting}
                   className="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-6 py-3 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                 >
-                  {isLoading ? (
+                  {isAccepting ? (
                     <div className="flex items-center">
                       <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -184,7 +187,7 @@ const AppointmentModals = ({
                 </button>
                 <button 
                   onClick={handleCancelModal}
-                  disabled={isLoading}
+                  disabled={isAccepting}
                   className="w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-6 py-3 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                 >
                   Cancel
@@ -263,10 +266,10 @@ const AppointmentModals = ({
               <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse space-y-3 sm:space-y-0 sm:space-x-3 sm:space-x-reverse">
                 <button 
                   onClick={confirmReschedule}
-                  disabled={isLoading || !newServiceDate}
+                  disabled={isRescheduling || !newServiceDate}
                   className="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-6 py-3 bg-yellow-600 text-base font-medium text-white hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                 >
-                  {isLoading ? (
+                  {isRescheduling ? (
                     <div className="flex items-center">
                       <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -280,7 +283,7 @@ const AppointmentModals = ({
                 </button>
                 <button 
                   onClick={handleCancelModal}
-                  disabled={isLoading}
+                  disabled={isRescheduling}
                   className="w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-6 py-3 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                 >
                   Cancel

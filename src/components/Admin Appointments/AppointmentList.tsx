@@ -1,16 +1,17 @@
 import AppointmentCard from '../AppointmentCard';
+import type { Appointment, Service, LoadingStates } from '../../types/appointment';
 
 interface AppointmentListProps {
   activeTab: string;
-  appointments: any[];
-  acceptedAppointments: any[];
-  getPaginatedData: () => any[];
-  isLoading: boolean;
-  openRejectModal: (id: any) => void;
-  openAcceptModal: (id: any) => void;
-  openRescheduleModal: (id: any, service: any) => void;
-  openCompleteModal: (id: any) => void;
-  parseServices: (str: string) => any[];
+  appointments: Appointment[];
+  acceptedAppointments: Appointment[];
+  getPaginatedData: () => Appointment[];
+  loadingStates: LoadingStates;
+  openRejectModal: (id: number | string) => void;
+  openAcceptModal: (id: number | string) => void;
+  openRescheduleModal: (id: number | string, service: Service) => void;
+  openCompleteModal: (id: number | string) => void;
+  parseServices: (str: string) => Service[];
   parseServicesFormatted: (str: string) => string;
   parseAcTypes: (str: string) => string;
 }
@@ -20,7 +21,7 @@ const AppointmentList = ({
   appointments, 
   acceptedAppointments, 
   getPaginatedData, 
-  isLoading, 
+  loadingStates, 
   openRejectModal, 
   openAcceptModal, 
   openRescheduleModal, 
@@ -29,6 +30,7 @@ const AppointmentList = ({
   parseServicesFormatted,
   parseAcTypes
 }: AppointmentListProps) => {
+  const isLoading = loadingStates.fetching;
   return (
     <div className="space-y-6">
       {/* Pending Appointments Cards */}
@@ -46,15 +48,15 @@ const AppointmentList = ({
             </div>
           ) : (
             <div className="grid gap-6">
-              {getPaginatedData().map((appt: any) => (
+              {getPaginatedData().map((appt: Appointment) => (
                 <AppointmentCard
                   key={appt.id}
-                  appointment={appt}
-                  services={parseServices(appt.services)}
+                  appointment={{ ...appt, services: typeof appt.services === 'string' ? appt.services : JSON.stringify(appt.services) }}
+                  services={typeof appt.services === 'string' ? parseServices(appt.services) : appt.services}
                   openRejectModal={openRejectModal}
                   openAcceptModal={openAcceptModal}
                   openRescheduleModal={openRescheduleModal}
-                  isLoading={isLoading}
+                  isLoading={loadingStates.fetching}
                 />
               ))}
             </div>
@@ -80,7 +82,7 @@ const AppointmentList = ({
               {/* Mobile-friendly card view for smaller screens */}
               <div className="block md:hidden">
                 <div className="divide-y divide-gray-200">
-                  {getPaginatedData().map((appointment: any) => (
+                  {getPaginatedData().map((appointment: Appointment) => (
                     <div key={appointment.id} className="p-6 space-y-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
@@ -96,10 +98,10 @@ const AppointmentList = ({
                         </div>
                         <button
                           onClick={() => openCompleteModal(appointment.id)}
-                          disabled={isLoading}
+                          disabled={loadingStates.completing[appointment.id]}
                           className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                         >
-                          Complete
+                          {loadingStates.completing[appointment.id] ? 'Processing...' : 'Complete'}
                         </button>
                       </div>
                       
@@ -117,14 +119,14 @@ const AppointmentList = ({
                       <div className="text-sm">
                         <span className="font-medium text-gray-700">Services:</span>
                         <p className="text-gray-900 mt-1">
-                          {appointment.services ? parseServicesFormatted(appointment.services) : 'N/A'}
+                          {appointment.services ? parseServicesFormatted(typeof appointment.services === 'string' ? appointment.services : JSON.stringify(appointment.services)) : 'N/A'}
                         </p>
                       </div>
                       
                       <div className="text-sm">
                         <span className="font-medium text-gray-700">AC Types:</span>
                         <p className="text-gray-900 mt-1">
-                          {appointment.services ? parseAcTypes(appointment.services) : 'N/A'}
+                          {appointment.services ? parseAcTypes(typeof appointment.services === 'string' ? appointment.services : JSON.stringify(appointment.services)) : 'N/A'}
                         </p>
                       </div>
                       
@@ -163,7 +165,7 @@ const AppointmentList = ({
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {getPaginatedData().map((appointment: any) => (
+                    {getPaginatedData().map((appointment: Appointment) => (
                       <tr key={appointment.id} className="hover:bg-gray-50 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
@@ -186,12 +188,12 @@ const AppointmentList = ({
                         </td>
                         <td className="px-6 py-4">
                           <div className="text-sm text-gray-900 max-w-xs">
-                            {appointment.services ? parseServicesFormatted(appointment.services) : 'N/A'}
+                            {appointment.services ? parseServicesFormatted(typeof appointment.services === 'string' ? appointment.services : JSON.stringify(appointment.services)) : 'N/A'}
                           </div>
                         </td>
                         <td className="px-6 py-4">
                           <div className="text-sm text-gray-900 max-w-xs">
-                            {appointment.services ? parseAcTypes(appointment.services) : 'N/A'}
+                            {appointment.services ? parseAcTypes(typeof appointment.services === 'string' ? appointment.services : JSON.stringify(appointment.services)) : 'N/A'}
                           </div>
                         </td>
                         <td className="px-6 py-4">
@@ -211,10 +213,10 @@ const AppointmentList = ({
                         <td className="px-6 py-4 whitespace-nowrap">
                           <button
                             onClick={() => openCompleteModal(appointment.id)}
-                            disabled={isLoading}
+                            disabled={loadingStates.completing[appointment.id]}
                             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
                           >
-                            {isLoading ? (
+                            {loadingStates.completing[appointment.id] ? (
                               <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>

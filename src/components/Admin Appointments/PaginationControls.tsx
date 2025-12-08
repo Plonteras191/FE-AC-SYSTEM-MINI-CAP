@@ -2,7 +2,7 @@ import { FaAngleLeft, FaAngleRight } from 'react-icons/fa';
 
 interface PaginationControlsProps {
   itemsPerPage: number;
-  handleItemsPerPageChange: (e: any) => void;
+  handleItemsPerPageChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   currentPage: number;
   totalPages: number;
   handlePageChange: (page: number) => void;

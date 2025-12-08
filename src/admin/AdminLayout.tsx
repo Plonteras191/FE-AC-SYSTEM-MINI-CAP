@@ -202,9 +202,9 @@ const AdminLayout = () => {
         </aside>
 
         {/* Main Content Area */}
-        <main className="flex-1 min-w-0 flex flex-col overflow-hidden">
-          <div className="flex-1 overflow-y-auto">
-            <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 py-4 lg:py-6">
+        <main className="flex-1 min-w-0 flex flex-col overflow-hidden h-full">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden">
+            <div className="w-full h-full">
               <PageWrapper>
                 <Outlet />
               </PageWrapper>

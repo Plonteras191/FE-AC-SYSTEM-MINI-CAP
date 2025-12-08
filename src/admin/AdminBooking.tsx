@@ -57,11 +57,22 @@ const AdminBooking = () => {
       }
     })
       .then(response => {
-        const dates = response.data.map((dateStr: string) => parseISO(dateStr));
-        setGlobalAvailableDates(dates);
+        // Handle different response structures
+        const dateData = Array.isArray(response.data) 
+          ? response.data 
+          : (response.data?.dates || response.data?.data || []);
+        
+        if (Array.isArray(dateData)) {
+          const dates = dateData.map((dateStr: string) => parseISO(dateStr));
+          setGlobalAvailableDates(dates);
+        } else {
+          console.error("Unexpected response format:", response.data);
+          setGlobalAvailableDates([]);
+        }
       })
       .catch(err => {
         console.error("Error fetching available dates:", err);
+        setGlobalAvailableDates([]);
       });
   }, []);
 
