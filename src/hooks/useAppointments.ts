@@ -11,7 +11,8 @@ export const useAppointmentData = () => {
     accepting: {},
     completing: {},
     rejecting: {},
-    rescheduling: {}
+    rescheduling: {},
+    returningToPending: {}
   });
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -82,10 +83,10 @@ export const useAppointmentActions = (
     try {
       await appointmentsApi.delete(id);
       await fetchAppointments();
-      toast.success("Appointment rejected successfully and notification email sent");
+      toast.success("Appointment cancelled successfully and notification email sent");
     } catch (error) {
       console.error("Error deleting appointment:", error);
-      toast.error("Failed to reject appointment");
+      toast.error("Failed to cancel appointment");
     } finally {
       setLoadingStates(prev => ({
         ...prev,
@@ -199,11 +200,37 @@ export const useAppointmentActions = (
     }
   }, [fetchAppointments, setLoadingStates]);
 
+  const handleReturnToPending = useCallback(async (id: number | string) => {
+    setLoadingStates(prev => ({
+      ...prev,
+      returningToPending: { ...prev.returningToPending, [id]: true }
+    }));
+
+    try {
+      const response = await appointmentsApi.returnToPending(id);
+      if (response.data && !response.data.error) {
+        await fetchAppointments();
+        toast.success("Appointment returned to pending successfully");
+      } else {
+        toast.error(response.data.error || "Failed to return appointment to pending");
+      }
+    } catch (error: any) {
+      console.error("Error returning appointment to pending:", error);
+      toast.error("Failed to return appointment to pending");
+    } finally {
+      setLoadingStates(prev => ({
+        ...prev,
+        returningToPending: { ...prev.returningToPending, [id]: false }
+      }));
+    }
+  }, [fetchAppointments, setLoadingStates]);
+
   return {
     handleReject,
     handleAccept,
     handleComplete,
-    handleReschedule
+    handleReschedule,
+    handleReturnToPending
   };
 };
 

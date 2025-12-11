@@ -23,13 +23,6 @@ const About = () => {
             </p>
           </div>
         </div>
-        
-        {/* Decorative wave */}
-        <div className="absolute bottom-0 left-0 right-0">
-          <svg className="w-full h-12 fill-current text-slate-50" viewBox="0 0 1200 120" preserveAspectRatio="none">
-            <path d="M0,60 C300,120 900,0 1200,60 L1200,120 L0,120 Z"></path>
-          </svg>
-        </div>
       </section>
 
       {/* Main Content */}

@@ -25,7 +25,8 @@ const AdminAppointments = () => {
     handleReject,
     handleAccept,
     handleComplete,
-    handleReschedule
+    handleReschedule,
+    handleReturnToPending
   } = useAppointmentActions(fetchAppointments, setLoadingStates);
 
   const {
@@ -41,6 +42,7 @@ const AdminAppointments = () => {
   const [isAcceptModalOpen, setIsAcceptModalOpen] = useState<boolean>(false);
   const [isCompleteModalOpen, setIsCompleteModalOpen] = useState<boolean>(false);
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState<boolean>(false);
+  const [isReturnToPendingModalOpen, setIsReturnToPendingModalOpen] = useState<boolean>(false);
   const [selectedAppointmentId, setSelectedAppointmentId] = useState<number | string | null>(null);
   const [selectedService, setSelectedService] = useState<string | null>(null);
   const [newServiceDate, setNewServiceDate] = useState<string>('');
@@ -67,7 +69,7 @@ const AdminAppointments = () => {
     }
   };
 
-  // Open modal to confirm rejection
+  // Open modal to cancel appointment
   const openRejectModal = (id: number | string) => {
     setSelectedAppointmentId(id);
     setIsConfirmModalOpen(true);
@@ -87,6 +89,12 @@ const AdminAppointments = () => {
     setIsCompleteModalOpen(true);
   };
 
+  // Open modal to confirm return to pending
+  const openReturnToPendingModal = (id: number | string) => {
+    setSelectedAppointmentId(id);
+    setIsReturnToPendingModalOpen(true);
+  };
+
   // Open modal to reschedule a service
   const openRescheduleModal = (id: number | string, service: Service) => {
     setSelectedAppointmentId(id);
@@ -97,7 +105,7 @@ const AdminAppointments = () => {
     setIsRescheduleModalOpen(true);
   };
 
-  // Confirm rejection
+  // Confirm cancellation
   const handleConfirmReject = () => {
     if (selectedAppointmentId !== null) {
       handleReject(selectedAppointmentId);
@@ -112,6 +120,7 @@ const AdminAppointments = () => {
     setIsAcceptModalOpen(false);
     setIsCompleteModalOpen(false);
     setIsRescheduleModalOpen(false);
+    setIsReturnToPendingModalOpen(false);
     setSelectedAppointmentId(null);
     setSelectedTechnicians([]);
     setCustomTechnicianInput('');
@@ -175,6 +184,15 @@ const AdminAppointments = () => {
     }
   };
 
+  // Confirm return to pending
+  const confirmReturnToPending = () => {
+    if (selectedAppointmentId !== null) {
+      handleReturnToPending(selectedAppointmentId);
+    }
+    setIsReturnToPendingModalOpen(false);
+    setSelectedAppointmentId(null);
+  };
+
   // Handle tab change with pagination reset
   const handleTabChange = (tab: 'pending' | 'accepted') => {
     setActiveTab(tab);
@@ -209,7 +227,8 @@ const AdminAppointments = () => {
     Object.values(loadingStates.accepting).some(Boolean) ||
     Object.values(loadingStates.completing).some(Boolean) ||
     Object.values(loadingStates.rejecting).some(Boolean) ||
-    Object.values(loadingStates.rescheduling).some(Boolean);
+    Object.values(loadingStates.rescheduling).some(Boolean) ||
+    Object.values(loadingStates.returningToPending).some(Boolean);
 
   return (
     <PageWrapper>
@@ -368,6 +387,7 @@ const AdminAppointments = () => {
                 openAcceptModal={openAcceptModal}
                 openRescheduleModal={openRescheduleModal}
                 openCompleteModal={openCompleteModal}
+                openReturnToPendingModal={openReturnToPendingModal}
                 parseServices={parseServices}
                 parseServicesFormatted={parseServicesFormatted}
                 parseAcTypes={parseAcTypes}
@@ -381,6 +401,7 @@ const AdminAppointments = () => {
           isAcceptModalOpen={isAcceptModalOpen}
           isCompleteModalOpen={isCompleteModalOpen}
           isRescheduleModalOpen={isRescheduleModalOpen}
+          isReturnToPendingModalOpen={isReturnToPendingModalOpen}
           selectedAppointmentId={selectedAppointmentId}
           selectedService={selectedService}
           newServiceDate={newServiceDate}
@@ -399,6 +420,7 @@ const AdminAppointments = () => {
           removeTechnician={removeTechnician}
           confirmReschedule={confirmReschedule}
           completeAppointment={completeAppointment}
+          confirmReturnToPending={confirmReturnToPending}
         />
         </div>
       </div>

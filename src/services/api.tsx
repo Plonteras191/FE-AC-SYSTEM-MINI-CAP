@@ -31,7 +31,10 @@ export const appointmentsApi = {
     apiClient.put(`/appointments/${id}/reschedule`, payload, { signal }),
   
   getTechnicians: (signal?: AbortSignal) => 
-    apiClient.get('/appointments/technicians', { signal })
+    apiClient.get('/appointments/technicians', { signal }),
+  
+  returnToPending: (id: number | string, signal?: AbortSignal) => 
+    apiClient.post(`/appointments/${id}/return-to-pending`, {}, { signal })
 };
 
 export default apiClient;

@@ -6,7 +6,7 @@ interface ModalProps {
   message: string;
   onConfirm: () => void;
   onCancel: () => void;
-  actionType?: 'reject' | 'accept' | 'complete' | string;
+  actionType?: 'reject' | 'accept' | 'complete' | 'returnToPending' | string;
 }
 
 const Modal = ({ isOpen, title, message, onConfirm, onCancel, actionType }: ModalProps) => {
@@ -18,7 +18,7 @@ const Modal = ({ isOpen, title, message, onConfirm, onCancel, actionType }: Moda
       case 'reject':
         return { 
           className: 'w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-6 py-3 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm transition-all duration-200',
-          text: 'Reject Appointment',
+          text: 'Cancel Appointment',
           iconColor: 'text-red-600',
           bgColor: 'bg-red-100'
         };
@@ -35,6 +35,13 @@ const Modal = ({ isOpen, title, message, onConfirm, onCancel, actionType }: Moda
           text: 'Mark as Completed',
           iconColor: 'text-blue-600',
           bgColor: 'bg-blue-100'
+        };
+      case 'returnToPending':
+        return { 
+          className: 'w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-6 py-3 bg-orange-600 text-base font-medium text-white hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 sm:ml-3 sm:w-auto sm:text-sm transition-all duration-200',
+          text: 'Return to Pending',
+          iconColor: 'text-orange-600',
+          bgColor: 'bg-orange-100'
         };
       default:
         return { 
@@ -67,6 +74,12 @@ const Modal = ({ isOpen, title, message, onConfirm, onCancel, actionType }: Moda
         return (
           <svg className="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        );
+      case 'returnToPending':
+        return (
+          <svg className="h-6 w-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         );
       default:

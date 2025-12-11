@@ -46,4 +46,5 @@ export interface LoadingStates {
   completing: Record<number | string, boolean>;
   rejecting: Record<number | string, boolean>;
   rescheduling: Record<number | string, boolean>;
+  returningToPending: Record<number | string, boolean>;
 }

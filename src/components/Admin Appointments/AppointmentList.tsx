@@ -11,6 +11,7 @@ interface AppointmentListProps {
   openAcceptModal: (id: number | string) => void;
   openRescheduleModal: (id: number | string, service: Service) => void;
   openCompleteModal: (id: number | string) => void;
+  openReturnToPendingModal: (id: number | string) => void;
   parseServices: (str: string) => Service[];
   parseServicesFormatted: (str: string) => string;
   parseAcTypes: (str: string) => string;
@@ -26,6 +27,7 @@ const AppointmentList = ({
   openAcceptModal, 
   openRescheduleModal, 
   openCompleteModal,
+  openReturnToPendingModal,
   parseServices,
   parseServicesFormatted,
   parseAcTypes
@@ -96,13 +98,23 @@ const AppointmentList = ({
                             <p className="text-sm text-gray-600">{appointment.name}</p>
                           </div>
                         </div>
-                        <button
-                          onClick={() => openCompleteModal(appointment.id)}
-                          disabled={loadingStates.completing[appointment.id]}
-                          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-                        >
-                          {loadingStates.completing[appointment.id] ? 'Processing...' : 'Complete'}
-                        </button>
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => openReturnToPendingModal(appointment.id)}
+                            disabled={loadingStates.returningToPending[appointment.id]}
+                            className="bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                            title="Return to Pending"
+                          >
+                            {loadingStates.returningToPending[appointment.id] ? 'Processing...' : 'Return'}
+                          </button>
+                          <button
+                            onClick={() => openCompleteModal(appointment.id)}
+                            disabled={loadingStates.completing[appointment.id]}
+                            className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                          >
+                            {loadingStates.completing[appointment.id] ? 'Processing...' : 'Complete'}
+                          </button>
+                        </div>
                       </div>
                       
                       <div className="grid grid-cols-2 gap-4 text-sm">
@@ -211,20 +223,37 @@ const AppointmentList = ({
                           <div className="text-sm text-gray-900 max-w-xs">{appointment.complete_address}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <button
-                            onClick={() => openCompleteModal(appointment.id)}
-                            disabled={loadingStates.completing[appointment.id]}
-                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
-                          >
-                            {loadingStates.completing[appointment.id] ? (
-                              <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                              </svg>
-                            ) : (
-                              'Complete'
-                            )}
-                          </button>
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => openReturnToPendingModal(appointment.id)}
+                              disabled={loadingStates.returningToPending[appointment.id]}
+                              className="bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
+                              title="Return to Pending"
+                            >
+                              {loadingStates.returningToPending[appointment.id] ? (
+                                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                              ) : (
+                                'Return'
+                              )}
+                            </button>
+                            <button
+                              onClick={() => openCompleteModal(appointment.id)}
+                              disabled={loadingStates.completing[appointment.id]}
+                              className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
+                            >
+                              {loadingStates.completing[appointment.id] ? (
+                                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                              ) : (
+                                'Complete'
+                              )}
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}

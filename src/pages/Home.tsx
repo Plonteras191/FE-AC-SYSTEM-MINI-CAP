@@ -31,32 +31,29 @@ const Home = () => (
             <Link 
               to="/booking" 
               className="group relative bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold text-lg 
-                         hover:bg-blue-50 hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl
-                         border-2 border-transparent hover:border-blue-200 min-w-[200px]"
+                         hover:scale-110 transition-all duration-500 shadow-xl hover:shadow-blue-500/50
+                         border-2 border-transparent hover:border-blue-200 min-w-[200px] overflow-hidden
+                         before:absolute before:inset-0 before:bg-linear-to-r before:from-blue-400 before:via-cyan-400 before:to-blue-400
+                         before:-translate-x-full hover:before:translate-x-full before:transition-transform before:duration-700
+                         before:opacity-20"
             >
-              <span className="relative z-10">Schedule Now</span>
-              <div className="absolute inset-0 bg-linear-to-r from-blue-50 to-cyan-50 rounded-xl opacity-0 
-                              group-hover:opacity-100 transition-opacity duration-300"></div>
+              <span className="relative z-10 group-hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.5)] transition-all duration-300">Schedule Now</span>
             </Link>
             
             <Link 
               to="/services" 
-              className="group bg-transparent border-2 border-white text-white px-8 py-4 rounded-xl 
-                         font-semibold text-lg hover:bg-white hover:text-blue-600 transition-all duration-300
-                         hover:scale-105 shadow-lg hover:shadow-xl min-w-[200px]"
+              className="group relative bg-transparent border-2 border-white text-white px-8 py-4 rounded-xl 
+                         font-semibold text-lg hover:bg-white hover:text-blue-600 transition-all duration-500
+                         hover:scale-110 shadow-lg hover:shadow-white/30 min-w-[200px] overflow-hidden
+                         before:absolute before:inset-0 before:bg-white before:scale-x-0 hover:before:scale-x-100
+                         before:transition-transform before:duration-500 before:origin-left"
             >
-              View Services
+              <span className="relative z-10">View Services</span>
             </Link>
           </div>
         </div>
       </div>
       
-      {/* Decorative wave */}
-      <div className="absolute bottom-0 left-0 right-0">
-        <svg className="w-full h-12 fill-current text-slate-50" viewBox="0 0 1200 120" preserveAspectRatio="none">
-          <path d="M0,60 C300,120 900,0 1200,60 L1200,120 L0,120 Z"></path>
-        </svg>
-      </div>
     </section>
 
     {/* Features Section */}
@@ -72,50 +69,70 @@ const Home = () => (
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
-          <div className="group bg-white p-8 lg:p-10 rounded-2xl shadow-lg hover:shadow-2xl 
-                          transition-all duration-500 hover:-translate-y-2 border border-gray-100">
-            <div className="text-6xl lg:text-7xl mb-6 text-center group-hover:scale-110 transition-transform duration-300">
-              ❄️
+          <div className="group relative bg-white p-8 lg:p-10 rounded-2xl shadow-lg hover:shadow-blue-500/30 
+                          transition-all duration-500 hover:-translate-y-3 border border-gray-100
+                          hover:border-blue-300 overflow-hidden
+                          before:absolute before:inset-0 before:bg-linear-to-br before:from-blue-50 before:to-cyan-50
+                          before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-500">
+            <div className="relative z-10">
+              <div className="text-6xl lg:text-7xl mb-6 text-center group-hover:scale-125 group-hover:rotate-12 transition-all duration-500
+                              drop-shadow-none group-hover:drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]">
+                ❄️
+              </div>
+              <h3 className="text-xl lg:text-2xl font-bold mb-4 text-center text-gray-900 group-hover:text-blue-600 transition-colors duration-300">
+                Fast Response
+              </h3>
+              <p className="text-gray-600 text-center leading-relaxed">
+                Quick and reliable professional services when you need them most
+              </p>
+              <div className="mt-6 h-1 bg-linear-to-r from-blue-500 to-cyan-500 rounded-full 
+                              scale-x-0 group-hover:scale-x-100 transition-transform duration-500
+                              shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
             </div>
-            <h3 className="text-xl lg:text-2xl font-bold mb-4 text-center text-gray-900">
-              Fast Response
-            </h3>
-            <p className="text-gray-600 text-center leading-relaxed">
-              Quick and reliable professional services when you need them most
-            </p>
-            <div className="mt-6 h-1 bg-linear-to-r from-blue-500 to-cyan-500 rounded-full 
-                            scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
           </div>
           
-          <div className="group bg-white p-8 lg:p-10 rounded-2xl shadow-lg hover:shadow-2xl 
-                          transition-all duration-500 hover:-translate-y-2 border border-gray-100">
-            <div className="text-6xl lg:text-7xl mb-6 text-center group-hover:scale-110 transition-transform duration-300">
-              🔧
+          <div className="group relative bg-white p-8 lg:p-10 rounded-2xl shadow-lg hover:shadow-cyan-500/30 
+                          transition-all duration-500 hover:-translate-y-3 border border-gray-100
+                          hover:border-cyan-300 overflow-hidden
+                          before:absolute before:inset-0 before:bg-linear-to-br before:from-cyan-50 before:to-blue-50
+                          before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-500">
+            <div className="relative z-10">
+              <div className="text-6xl lg:text-7xl mb-6 text-center group-hover:scale-125 group-hover:-rotate-12 transition-all duration-500
+                              drop-shadow-none group-hover:drop-shadow-[0_0_15px_rgba(6,182,212,0.5)]">
+                🔧
+              </div>
+              <h3 className="text-xl lg:text-2xl font-bold mb-4 text-center text-gray-900 group-hover:text-cyan-600 transition-colors duration-300">
+                Expert Technicians
+              </h3>
+              <p className="text-gray-600 text-center leading-relaxed">
+                NC2/NC3-certified professionals with over 10 years of experience
+              </p>
+              <div className="mt-6 h-1 bg-linear-to-r from-blue-500 to-cyan-500 rounded-full 
+                              scale-x-0 group-hover:scale-x-100 transition-transform duration-500
+                              shadow-[0_0_10px_rgba(6,182,212,0.5)]"></div>
             </div>
-            <h3 className="text-xl lg:text-2xl font-bold mb-4 text-center text-gray-900">
-              Expert Technicians
-            </h3>
-            <p className="text-gray-600 text-center leading-relaxed">
-              NC2/NC3-certified professionals with over 10 years of experience
-            </p>
-            <div className="mt-6 h-1 bg-linear-to-r from-blue-500 to-cyan-500 rounded-full 
-                            scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
           </div>
           
-          <div className="group bg-white p-8 lg:p-10 rounded-2xl shadow-lg hover:shadow-2xl 
-                          transition-all duration-500 hover:-translate-y-2 border border-gray-100 
-                          md:col-span-2 lg:col-span-1">
-            <div className="text-6xl lg:text-7xl mb-6 text-center group-hover:scale-110 transition-transform duration-300">
-              ₱
+          <div className="group relative bg-white p-8 lg:p-10 rounded-2xl shadow-lg hover:shadow-blue-500/30 
+                          transition-all duration-500 hover:-translate-y-3 border border-gray-100 
+                          md:col-span-2 lg:col-span-1 hover:border-blue-300 overflow-hidden
+                          before:absolute before:inset-0 before:bg-linear-to-br before:from-blue-50 before:to-cyan-50
+                          before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-500">
+            <div className="relative z-10">
+              <div className="text-6xl lg:text-7xl mb-6 text-center group-hover:scale-125 group-hover:rotate-12 transition-all duration-500
+                              drop-shadow-none group-hover:drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]">
+                ₱
+              </div>
+              <h3 className="text-xl lg:text-2xl font-bold mb-4 text-center text-gray-900 group-hover:text-blue-600 transition-colors duration-300">
+                Transparent Pricing
+              </h3>
+              <p className="text-gray-600 text-center leading-relaxed">
+                Upfront pricing with no hidden fees - know exactly what you'll pay
+              </p>
+              <div className="mt-6 h-1 bg-linear-to-r from-blue-500 to-cyan-500 rounded-full 
+                              scale-x-0 group-hover:scale-x-100 transition-transform duration-500
+                              shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
             </div>
-            <h3 className="text-xl lg:text-2xl font-bold mb-4 text-center text-gray-900">
-              Transparent Pricing
-            </h3>
-            <p className="text-gray-600 text-center leading-relaxed">
-              Upfront pricing with no hidden fees - know exactly what you'll pay
-            </p>
-            <div className="mt-6 h-1 bg-linear-to-r from-blue-500 to-cyan-500 rounded-full 
-                            scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
           </div>
         </div>
       </div>
@@ -143,21 +160,22 @@ const Home = () => (
               <Link 
                 to="/booking" 
                 className="group relative bg-white text-blue-600 px-10 py-4 rounded-xl font-bold text-lg 
-                           hover:bg-blue-50 hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl
-                           border-2 border-transparent hover:border-blue-200 min-w-[220px]"
+                           hover:scale-110 transition-all duration-500 shadow-xl hover:shadow-white/50
+                           border-2 border-transparent hover:border-white min-w-[220px] overflow-hidden
+                           before:absolute before:inset-0 before:bg-linear-to-r before:from-cyan-200 before:via-blue-200 before:to-cyan-200
+                           before:translate-y-full hover:before:translate-y-0 before:transition-transform before:duration-500"
               >
-                <span className="relative z-10">Book Appointment</span>
-                <div className="absolute inset-0 bg-linear-to-r from-blue-50 to-cyan-50 rounded-xl opacity-0 
-                                group-hover:opacity-100 transition-opacity duration-300"></div>
+                <span className="relative z-10 group-hover:text-blue-800 transition-colors duration-300">Book Appointment</span>
               </Link>
               
               <Link 
                 to="/call-us" 
-                className="group bg-transparent border-2 border-white text-white px-10 py-4 rounded-xl 
-                           font-bold text-lg hover:bg-white hover:text-blue-600 transition-all duration-300
-                           hover:scale-105 shadow-lg hover:shadow-xl min-w-[220px]"
+                className="group relative bg-transparent border-2 border-white text-white px-10 py-4 rounded-xl 
+                           font-bold text-lg hover:bg-white hover:text-blue-600 transition-all duration-500
+                           hover:scale-110 shadow-lg hover:shadow-white/50 min-w-[220px]
+                           hover:rotate-2 active:rotate-0 active:scale-105"
               >
-                Call Now
+                <span className="relative z-10">Call Now</span>
               </Link>
             </div>
           </div>
@@ -210,41 +228,61 @@ const Home = () => (
               <li>
                 <Link 
                   to="/" 
-                  className="text-gray-300 hover:text-cyan-400 transition-colors duration-300"
+                  className="group relative text-gray-300 hover:text-cyan-400 transition-all duration-300 inline-block
+                             hover:translate-x-2"
                 >
-                  Home
+                  <span className="relative">
+                    Home
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-cyan-400 group-hover:w-full transition-all duration-300"></span>
+                  </span>
                 </Link>
               </li>
               <li>
                 <Link 
                   to="/services" 
-                  className="text-gray-300 hover:text-cyan-400 transition-colors duration-300"
+                  className="group relative text-gray-300 hover:text-cyan-400 transition-all duration-300 inline-block
+                             hover:translate-x-2"
                 >
-                  Services
+                  <span className="relative">
+                    Services
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-cyan-400 group-hover:w-full transition-all duration-300"></span>
+                  </span>
                 </Link>
               </li>
               <li>
                 <Link 
                   to="/about" 
-                  className="text-gray-300 hover:text-cyan-400 transition-colors duration-300"
+                  className="group relative text-gray-300 hover:text-cyan-400 transition-all duration-300 inline-block
+                             hover:translate-x-2"
                 >
-                  About Us
+                  <span className="relative">
+                    About Us
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-cyan-400 group-hover:w-full transition-all duration-300"></span>
+                  </span>
                 </Link>
               </li>
               <li>
                 <Link 
                   to="/booking" 
-                  className="text-gray-300 hover:text-cyan-400 transition-colors duration-300"
+                  className="group relative text-gray-300 hover:text-cyan-400 transition-all duration-300 inline-block
+                             hover:translate-x-2"
                 >
-                  Book Service
+                  <span className="relative">
+                    Book Service
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-cyan-400 group-hover:w-full transition-all duration-300"></span>
+                  </span>
                 </Link>
               </li>
               <li>
                 <Link 
                   to="/call-us" 
-                  className="text-gray-300 hover:text-cyan-400 transition-colors duration-300"
+                  className="group relative text-gray-300 hover:text-cyan-400 transition-all duration-300 inline-block
+                             hover:translate-x-2"
                 >
-                  Contact
+                  <span className="relative">
+                    Contact
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-cyan-400 group-hover:w-full transition-all duration-300"></span>
+                  </span>
                 </Link>
               </li>
             </ul>
@@ -290,21 +328,24 @@ const Home = () => (
               <div className="flex space-x-4">
                 <a 
                   href="https://facebook.com" 
-                  className="text-gray-400 hover:text-cyan-400 transition-colors duration-300"
+                  className="text-gray-400 hover:text-cyan-400 transition-all duration-300 hover:scale-125 hover:-rotate-12
+                             hover:drop-shadow-[0_0_10px_rgba(6,182,212,0.7)]"
                   aria-label="Facebook"
                 >
                   <span className="text-xl">📘</span>
                 </a>
                 <a 
                   href="#" 
-                  className="text-gray-400 hover:text-cyan-400 transition-colors duration-300"
+                  className="text-gray-400 hover:text-cyan-400 transition-all duration-300 hover:scale-125 hover:rotate-12
+                             hover:drop-shadow-[0_0_10px_rgba(6,182,212,0.7)]"
                   aria-label="Instagram"
                 >
                   <span className="text-xl">📷</span>
                 </a>
                 <a 
                   href="#" 
-                  className="text-gray-400 hover:text-cyan-400 transition-colors duration-300"
+                  className="text-gray-400 hover:text-cyan-400 transition-all duration-300 hover:scale-125 hover:-rotate-12
+                             hover:drop-shadow-[0_0_10px_rgba(6,182,212,0.7)]"
                   aria-label="WhatsApp"
                 >
                   <span className="text-xl">💬</span>

@@ -6,6 +6,7 @@ interface AppointmentModalsProps {
   isAcceptModalOpen: boolean;
   isCompleteModalOpen: boolean;
   isRescheduleModalOpen: boolean;
+  isReturnToPendingModalOpen: boolean;
   selectedAppointmentId: number | string | null;
   selectedService: string | null;
   newServiceDate: string;
@@ -24,6 +25,7 @@ interface AppointmentModalsProps {
   removeTechnician: (name: string) => void;
   confirmReschedule: () => void;
   completeAppointment: (id: number | string) => void;
+  confirmReturnToPending: () => void;
 }
 
 const AppointmentModals = ({
@@ -31,6 +33,7 @@ const AppointmentModals = ({
   isAcceptModalOpen,
   isCompleteModalOpen,
   isRescheduleModalOpen,
+  isReturnToPendingModalOpen,
   selectedAppointmentId,
   selectedService,
   newServiceDate,
@@ -48,17 +51,19 @@ const AppointmentModals = ({
   addCustomTechnician,
   removeTechnician,
   confirmReschedule,
-  completeAppointment
+  completeAppointment,
+  confirmReturnToPending
 }: AppointmentModalsProps) => {
   const isAccepting = selectedAppointmentId ? loadingStates.accepting[selectedAppointmentId] : false;
   const isRescheduling = selectedAppointmentId ? loadingStates.rescheduling[selectedAppointmentId] : false;
+  const isReturningToPending = selectedAppointmentId ? loadingStates.returningToPending[selectedAppointmentId] : false;
   return (
     <>
-      {/* Reject Modal */}
+      {/* Cancel Modal */}
       <Modal
         isOpen={isConfirmModalOpen}
-        title="Confirm Rejection"
-        message="Are you sure you want to reject this appointment? A notification email will be sent to the customer."
+        title="Cancel Appointment"
+        message="Are you sure you want to cancel this appointment? A notification email will be sent to the customer."
         onConfirm={handleConfirmReject}
         onCancel={handleCancelModal}
         actionType="reject"
@@ -292,6 +297,16 @@ const AppointmentModals = ({
             </div>
         </div>
       )}
+
+      {/* Return to Pending Modal */}
+      <Modal
+        isOpen={isReturnToPendingModalOpen}
+        title="Return to Pending"
+        message="Are you sure you want to return this appointment to pending status? The customer will not receive an email notification."
+        onConfirm={confirmReturnToPending}
+        onCancel={handleCancelModal}
+        actionType="returnToPending"
+      />
     </>
   );
 };

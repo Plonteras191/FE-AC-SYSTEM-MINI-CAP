@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import PageWrapper from '../components/PageWrapper.tsx';
 import apiClient, { appointmentsApi } from '../services/api.tsx';
-import { FaCalendarAlt, FaBell, FaChartLine, FaCheck, FaClock, FaUser, FaSync, FaExclamationTriangle } from 'react-icons/fa';
+import { FaCalendarAlt, FaBell, FaChartLine, FaCheck, FaClock, FaUser, FaSync, FaExclamationTriangle, FaMapMarkerAlt, FaPhone } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Constants
@@ -9,10 +9,21 @@ const POLLING_INTERVAL_MS = 2 * 60 * 1000; // 2 minutes
 const MAX_NOTIFICATIONS_DISPLAY = 9;
 const LOCAL_STORAGE_KEY = 'processedAppointmentIds';
 
+interface Service {
+  type: string;
+  date: string;
+  ac_types?: string[];
+}
+
 interface Appointment {
   id: number;
   name: string;
   status?: string;
+  phone?: string;
+  email?: string;
+  complete_address?: string;
+  services?: string | Service[];
+  technicians?: string[];
 }
 
 interface Notification {
@@ -185,11 +196,16 @@ const Dashboard = () => {
       let data = response.data;
       if (!Array.isArray(data)) data = [data];
       
-      // Validate and sanitize appointment data
+      // Validate and sanitize appointment data with full details
       const validatedData = data.map((app: any) => ({
         id: Number(app.id) || 0,
         name: sanitizeString(String(app.name || 'Unknown')),
-        status: app.status ? sanitizeString(String(app.status)) : undefined
+        status: app.status ? sanitizeString(String(app.status)) : undefined,
+        phone: app.phone ? sanitizeString(String(app.phone)) : undefined,
+        email: app.email ? sanitizeString(String(app.email)) : undefined,
+        complete_address: app.complete_address ? sanitizeString(String(app.complete_address)) : undefined,
+        services: app.services || undefined,
+        technicians: Array.isArray(app.technicians) ? app.technicians : []
       }));
       
       setAppointments(validatedData);
@@ -242,6 +258,37 @@ const Dashboard = () => {
     const rejected = appointments.filter(a => a.status && a.status.toLowerCase() === 'rejected').length;
     
     return { total, pending, accepted, completed, rejected };
+  }, [appointments]);
+
+  // Get today's accepted appointments (memoized)
+  const todaysSchedule = useMemo(() => {
+    const today = new Date().toISOString().split('T')[0];
+    
+    return appointments.filter(appointment => {
+      // Only show accepted appointments
+      if (!appointment.status || appointment.status.toLowerCase() !== 'accepted') {
+        return false;
+      }
+      
+      // Check if any service is scheduled for today
+      if (appointment.services) {
+        try {
+          const services = typeof appointment.services === 'string' 
+            ? JSON.parse(appointment.services) 
+            : appointment.services;
+          
+          return services.some((service: Service) => {
+            const serviceDate = new Date(service.date).toISOString().split('T')[0];
+            return serviceDate === today;
+          });
+        } catch (error) {
+          console.error('Error parsing services:', error);
+          return false;
+        }
+      }
+      
+      return false;
+    });
   }, [appointments]);
 
   // Handle notification click - just mark as read
@@ -482,7 +529,7 @@ const Dashboard = () => {
             >
                 <div className="flex items-start justify-between mb-4">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">Total Appointments</p>
+                  <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">{currentMonthName} Total Appointments</p>
                   <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">{stats.total}</h3>
                 </div>
                 <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg">
@@ -641,10 +688,10 @@ const Dashboard = () => {
                 </div>
               </div>
               
-              {/* Rejection Rate */}
+              {/* Cancellation Rate */}
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="flex justify-between items-center mb-3">
-                  <span className="text-sm font-medium text-gray-600">Rejection Rate</span>
+                  <span className="text-sm font-medium text-gray-600">Cancellation Rate</span>
                   <span className="text-lg font-bold text-gray-900">
                     {stats.total ? Math.round((stats.rejected / stats.total) * 100) : 0}%
                   </span>
@@ -657,6 +704,116 @@ const Dashboard = () => {
                 </div>
               </div>
             </div>
+          </motion.div>
+          
+          {/* Today's Schedule Section */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.7 }}
+            className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200 mt-8"
+          >
+            <h2 className="flex items-center gap-3 text-xl font-bold text-gray-900 mb-6">
+              <span className="flex items-center justify-center w-10 h-10 bg-green-100 rounded-lg">
+                <FaCalendarAlt className="h-5 w-5 text-green-600" />
+              </span>
+              Today's Schedule
+              <span className="ml-auto text-sm font-normal text-gray-500">
+                {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+              </span>
+            </h2>
+            
+            {todaysSchedule.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-gray-500">
+                <FaCalendarAlt className="h-12 w-12 mb-3 text-gray-300" />
+                <p className="text-base font-medium">No appointments scheduled for today</p>
+                <p className="text-sm text-gray-400 mt-1">Check back later or view all appointments</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {todaysSchedule.map((appointment, index) => {
+                  const services = typeof appointment.services === 'string' 
+                    ? JSON.parse(appointment.services) 
+                    : appointment.services || [];
+                  
+                  return (
+                    <motion.div
+                      key={appointment.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.1 }}
+                      className="bg-green-50 rounded-lg border border-green-200 p-4 hover:shadow-md transition-all duration-200"
+                    >
+                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                        {/* Customer Info */}
+                        <div className="flex items-start gap-3">
+                          <div className="flex items-center justify-center w-10 h-10 bg-green-100 rounded-full shrink-0">
+                            <FaUser className="h-5 w-5 text-green-600" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-gray-900 truncate">
+                              {appointment.name}
+                            </h3>
+                            {appointment.phone && (
+                              <div className="flex items-center gap-1 text-sm text-gray-600 mt-1">
+                                <FaPhone className="h-3 w-3" />
+                                <span>{appointment.phone}</span>
+                              </div>
+                            )}
+                            {appointment.complete_address && (
+                              <div className="flex items-start gap-1 text-sm text-gray-600 mt-1">
+                                <FaMapMarkerAlt className="h-3 w-3 mt-0.5 shrink-0" />
+                                <span className="line-clamp-2">{appointment.complete_address}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {/* Services Info */}
+                        <div className="flex flex-col">
+                          <span className="text-xs font-medium text-gray-500 uppercase mb-2">Services</span>
+                          <div className="space-y-1">
+                            {services.map((service: Service, idx: number) => (
+                              <div key={idx} className="flex items-center gap-2">
+                                <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-green-100 text-green-700">
+                                  {service.type}
+                                </span>
+                                {service.ac_types && service.ac_types.length > 0 && (
+                                  <span className="text-xs text-gray-500">
+                                    {service.ac_types.join(', ')}
+                                  </span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        
+                        {/* Technicians Info */}
+                        <div className="flex flex-col">
+                          <span className="text-xs font-medium text-gray-500 uppercase mb-2">Assigned Technicians</span>
+                          {appointment.technicians && appointment.technicians.length > 0 ? (
+                            <div className="flex flex-wrap gap-1">
+                              {appointment.technicians.map((tech, idx) => (
+                                <span 
+                                  key={idx}
+                                  className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-700"
+                                >
+                                  {tech}
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-yellow-100 text-yellow-700 w-fit">
+                              Not assigned
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
           </motion.div>
         </div>
       </div>

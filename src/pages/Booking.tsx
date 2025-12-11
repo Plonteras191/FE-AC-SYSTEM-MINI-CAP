@@ -1,8 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import { parseISO, format } from 'date-fns';
-import ReCAPTCHA from "react-google-recaptcha";
 import "react-datepicker/dist/react-datepicker.css";
 import '../styles/DatePickerOverrides.css';
 import apiClient from '../services/api';
@@ -47,8 +46,6 @@ const Booking = () => {
   const [globalAvailableDates, setGlobalAvailableDates] = useState<Date[]>([]);
   const [errors, setErrors] = useState<FormErrors>({});
   const [formError, setFormError] = useState('');
-  const [recaptchaValue, setRecaptchaValue] = useState<string | null>(null);
-  const recaptchaRef = useRef<ReCAPTCHA>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -122,11 +119,6 @@ const Booking = () => {
     e.preventDefault();
     setFormError(''); // Clear previous form-level errors
 
-    if (!recaptchaValue) {
-      setFormError('Please verify that you are not a robot');
-      return;
-    }
-
     let newErrors: FormErrors = { services: {} };
     let hasErrors = false;
 
@@ -164,7 +156,6 @@ const Booking = () => {
       phone: formData.get('phone'),
       email: formData.get('email'),
       completeAddress: formData.get('completeAddress'),
-      recaptchaToken: recaptchaValue,
       services: selectedServices.map(service => ({
         type: serviceOptions[service],
         date: serviceDates[service] ? format(serviceDates[service], 'yyyy-MM-dd') : null,
@@ -175,9 +166,6 @@ const Booking = () => {
     apiClient.post('/booking', bookingData)      .then(response => {
         console.log("Response from backend:", response.data);
         if (response.data.bookingId) {
-          // Reset reCAPTCHA
-          recaptchaRef.current?.reset();
-          setRecaptchaValue(null);
           navigate('/confirmation', { state: bookingData });
         } else {
           setFormError("Error saving booking: " + response.data.message);
@@ -472,14 +460,6 @@ const Booking = () => {
             {/* Submit Section */}
             {selectedServices.length > 0 && (
               <div className="border-t border-gray-200 pt-8 space-y-6 animate-fade-in">
-                <div className="flex justify-center">
-                  <ReCAPTCHA
-                    ref={recaptchaRef}
-                    sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
-                    onChange={(value: string | null) => setRecaptchaValue(value)}
-                  />
-                </div>
-                
                 <button 
                   type="submit" 
                   className="w-full bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-3"
