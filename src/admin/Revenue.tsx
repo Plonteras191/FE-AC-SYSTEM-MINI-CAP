@@ -21,6 +21,7 @@ interface RevenueEntry {
   customer_name?: string;
   service_types?: string;
   total_revenue: string | number;
+  technician_names?: string;
 }
 
 const Revenue = () => {
@@ -668,6 +669,7 @@ const Revenue = () => {
                   <tr className="bg-linear-to-r from-emerald-600 to-emerald-700 text-white">
                     <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">Date Recorded</th>
                     <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">Customer Name</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">Technician(s)</th>
                     <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">Service Type</th>
                     <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">Booking ID</th>
                     <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider">Total Revenue</th>
@@ -686,6 +688,9 @@ const Revenue = () => {
                       </td>
                       <td className="px-6 py-4">
                         <span className="text-sm font-medium text-gray-900">{entry.customer_name || 'N/A'}</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-gray-700">{entry.technician_names || 'N/A'}</span>
                       </td>
                       <td className="px-6 py-4">
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
@@ -727,6 +732,9 @@ const Revenue = () => {
                         <span className="text-sm text-gray-600">{entry.revenue_date}</span>
                       </div>
                       <div className="text-base font-semibold text-gray-900 mb-1">{entry.customer_name || 'N/A'}</div>
+                      <div className="text-xs text-gray-600 mb-2">
+                        <span className="font-medium">Technician(s):</span> {entry.technician_names || 'N/A'}
+                      </div>
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
                         {entry.service_types || 'N/A'}
                       </span>

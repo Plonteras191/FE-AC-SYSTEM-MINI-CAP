@@ -10,6 +10,7 @@ interface RevenueEntry {
   customer_phone?: string;
   customer_email?: string;
   status_name?: string;
+  technician_names?: string;
 }
 
 interface CurrentPage {
@@ -100,6 +101,9 @@ const RevenueHistory = ({
                         Status
                       </th>
                       <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Technician(s)
+                      </th>
+                      <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                         Service Types
                       </th>
                       <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
@@ -133,6 +137,9 @@ const RevenueHistory = ({
                           }`}>
                             {entry.status_name || 'N/A'}
                           </span>
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-700">
+                          {entry.technician_names || 'N/A'}
                         </td>
                         <td className="px-4 py-4 text-sm">
                           {entry.service_types ? (
