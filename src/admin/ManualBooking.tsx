@@ -39,7 +39,7 @@ const acTypeOptions = [
   "Floor Standing Type"
 ];
 
-const AdminBooking = () => {
+const ManualBooking = () => {
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [serviceDates, setServiceDates] = useState<ServiceDates>({});
   const [serviceAcTypes, setServiceAcTypes] = useState<ServiceAcTypes>({});
@@ -52,21 +52,16 @@ const AdminBooking = () => {
     apiClient.get('/getAvailableDates', {
       params: { 
         global: 1, 
-        start: format(new Date(), 'yyyy-MM-dd'),
-        end: format(new Date(new Date().setFullYear(new Date().getFullYear() + 1)), 'yyyy-MM-dd')
+        start: '2025-01-01',
+        end: '2025-12-31'
       }
     })
       .then(response => {
-        // Handle different response structures
-        const dateData = Array.isArray(response.data) 
-          ? response.data 
-          : (response.data?.dates || response.data?.data || []);
-        
-        if (Array.isArray(dateData)) {
-          const dates = dateData.map((dateStr: string) => parseISO(dateStr));
+        if (response.data.success && response.data.available_dates) {
+          const dates = response.data.available_dates.map((dateStr: string) => parseISO(dateStr));
           setGlobalAvailableDates(dates);
         } else {
-          console.error("Unexpected response format:", response.data);
+          console.error("Invalid response format:", response.data);
           setGlobalAvailableDates([]);
         }
       })
@@ -120,9 +115,9 @@ const AdminBooking = () => {
     setServiceDates(prev => ({ ...prev, [service]: date }));
   };
 
-  const isDateGloballyAvailable = (date: Date | null): boolean => {
-    if (!date || globalAvailableDates.length === 0) return true;
-    return globalAvailableDates.some((avDate: Date) =>
+  const isDateGloballyAvailable = (date: Date) => {
+    if (globalAvailableDates.length === 0) return true;
+    return globalAvailableDates.some(avDate =>
       avDate.toDateString() === date.toDateString()
     );
   };
@@ -447,4 +442,4 @@ const AdminBooking = () => {
   );
 };
 
-export default AdminBooking;
+export default ManualBooking;

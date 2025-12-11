@@ -1,28 +1,31 @@
 import { Link } from 'react-router-dom';
+import heroImage from '../assets/heroimg.jpg';
 
 const Home = () => (
   <div className="min-h-screen bg-linear-to-br from-slate-50 to-blue-50">
     {/* Hero Section */}
-    <section className="relative overflow-hidden bg-linear-to-br from-blue-600 via-blue-500 to-cyan-500 text-white">
-      <div className="absolute inset-0 opacity-20">
-        <div className="w-full h-full" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          backgroundRepeat: 'repeat'
-        }}></div>
-      </div>
+    <section className="relative overflow-hidden text-white">
+      {/* Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url(${heroImage})`,
+        }}
+      ></div>
+      
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
         <div className="text-center space-y-8 animate-fade-in">
           <div className="space-y-4">
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight">
-              <span className="block">CDOC EER Aircon</span>
-              <span className="block bg-linear-to-r from-cyan-200 to-blue-200 bg-clip-text text-transparent">
+              <span className="block text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]">CDOC EER Aircon</span>
+              <span className="block text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]">
                 Cleaning & Repair
               </span>
-              <span className="block text-xl sm:text-2xl md:text-3xl lg:text-4xl font-medium mt-2 text-blue-100">
+              <span className="block text-xl sm:text-2xl md:text-3xl lg:text-4xl font-medium mt-2 text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]">
                 Home Service
               </span>
             </h1>
-            <p className="text-lg sm:text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-lg sm:text-xl md:text-2xl text-white max-w-3xl mx-auto leading-relaxed drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)]">
               Professional Services • NC2/NC3 Certified Technicians • 10+ Years Experience
             </p>
           </div>
