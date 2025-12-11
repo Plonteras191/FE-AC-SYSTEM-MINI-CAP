@@ -85,75 +85,159 @@ const AppointmentList = ({
               <div className="block md:hidden">
                 <div className="divide-y divide-gray-200">
                   {getPaginatedData().map((appointment: Appointment) => (
-                    <div key={appointment.id} className="p-6 space-y-4">
-                      <div className="flex items-center justify-between">
+                    <div key={appointment.id} className="p-5 bg-linear-to-br from-white to-green-50 hover:from-green-50 hover:to-green-100 transition-colors duration-200">
+                      {/* Header */}
+                      <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center space-x-3">
-                          <div className="bg-green-100 p-2 rounded-full">
-                            <svg className="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          <div className="bg-linear-to-br from-green-500 to-green-600 p-2.5 rounded-xl shadow-lg">
+                            <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                           </div>
                           <div>
-                            <h4 className="font-semibold text-gray-900">#{appointment.id}</h4>
-                            <p className="text-sm text-gray-600">{appointment.name}</p>
+                            <h4 className="font-bold text-gray-900 text-base">#{appointment.id}</h4>
+                            <p className="text-sm text-green-700 font-semibold">{appointment.name}</p>
                           </div>
                         </div>
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => openReturnToPendingModal(appointment.id)}
-                            disabled={loadingStates.returningToPending[appointment.id]}
-                            className="bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-                            title="Return to Pending"
-                          >
-                            {loadingStates.returningToPending[appointment.id] ? 'Processing...' : 'Return'}
-                          </button>
-                          <button
-                            onClick={() => openCompleteModal(appointment.id)}
-                            disabled={loadingStates.completing[appointment.id]}
-                            className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-                          >
-                            {loadingStates.completing[appointment.id] ? 'Processing...' : 'Complete'}
-                          </button>
+                      </div>
+                      
+                      {/* Contact Info */}
+                      <div className="bg-white rounded-xl p-4 mb-4 border border-gray-200 shadow-sm">
+                        <div className="grid grid-cols-1 gap-3">
+                          <div className="flex items-center space-x-2">
+                            <svg className="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                            </svg>
+                            <span className="text-xs font-medium text-gray-600">Phone:</span>
+                            <span className="text-sm font-semibold text-gray-900">{appointment.phone}</span>
+                          </div>
+                          {appointment.email && (
+                            <div className="flex items-center space-x-2">
+                              <svg className="h-4 w-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                              </svg>
+                              <span className="text-xs font-medium text-gray-600">Email:</span>
+                              <span className="text-sm font-semibold text-gray-900 truncate">{appointment.email}</span>
+                            </div>
+                          )}
                         </div>
                       </div>
                       
-                      <div className="grid grid-cols-2 gap-4 text-sm">
+                      {/* Services and AC Types */}
+                      <div className="space-y-3 mb-4">
                         <div>
-                          <span className="font-medium text-gray-700">Phone:</span>
-                          <p className="text-gray-900">{appointment.phone}</p>
+                          <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 block">Services:</span>
+                          <div className="flex flex-wrap gap-1.5">
+                            {appointment.services ? (
+                              parseServicesFormatted(typeof appointment.services === 'string' ? appointment.services : JSON.stringify(appointment.services)).split(', ').map((service: string, i: number) => (
+                                <span key={i} className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-200">
+                                  {service}
+                                </span>
+                              ))
+                            ) : (
+                              <span className="text-gray-400 text-sm">N/A</span>
+                            )}
+                          </div>
                         </div>
+                        
                         <div>
-                          <span className="font-medium text-gray-700">Email:</span>
-                          <p className="text-gray-900">{appointment.email || 'N/A'}</p>
+                          <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 block">AC Types:</span>
+                          <div className="flex flex-wrap gap-1.5">
+                            {appointment.services ? (
+                              parseAcTypes(typeof appointment.services === 'string' ? appointment.services : JSON.stringify(appointment.services)).split(', ').map((acType: string, i: number) => (
+                                <span key={i} className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
+                                  {acType}
+                                </span>
+                              ))
+                            ) : (
+                              <span className="text-gray-400 text-sm">N/A</span>
+                            )}
+                          </div>
                         </div>
                       </div>
                       
-                      <div className="text-sm">
-                        <span className="font-medium text-gray-700">Services:</span>
-                        <p className="text-gray-900 mt-1">
-                          {appointment.services ? parseServicesFormatted(typeof appointment.services === 'string' ? appointment.services : JSON.stringify(appointment.services)) : 'N/A'}
-                        </p>
+                      {/* Technicians */}
+                      <div className="mb-4">
+                        <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 block">Technicians:</span>
+                        {appointment.technicians && appointment.technicians.length > 0 ? (
+                          <div className="flex flex-wrap gap-1.5">
+                            {appointment.technicians.map((tech: string, i: number) => (
+                              <span key={i} className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                                <svg className="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                {tech}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-yellow-100 text-yellow-800 border border-yellow-200">
+                            <svg className="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            Not assigned
+                          </span>
+                        )}
                       </div>
                       
-                      <div className="text-sm">
-                        <span className="font-medium text-gray-700">AC Types:</span>
-                        <p className="text-gray-900 mt-1">
-                          {appointment.services ? parseAcTypes(typeof appointment.services === 'string' ? appointment.services : JSON.stringify(appointment.services)) : 'N/A'}
-                        </p>
+                      {/* Address */}
+                      <div className="mb-4">
+                        <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 block">Address:</span>
+                        <div className="flex items-start space-x-2 bg-white rounded-lg p-3 border border-gray-200">
+                          <svg className="h-4 w-4 text-green-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          <p className="text-sm text-gray-900 leading-relaxed">{appointment.complete_address}</p>
+                        </div>
                       </div>
                       
-                      <div className="text-sm">
-                        <span className="font-medium text-gray-700">Technicians:</span>
-                        <p className="text-gray-900 mt-1">
-                          {appointment.technicians && appointment.technicians.length > 0
-                            ? appointment.technicians.join(', ')
-                            : 'Not assigned'}
-                        </p>
-                      </div>
-                      
-                      <div className="text-sm">
-                        <span className="font-medium text-gray-700">Address:</span>
-                        <p className="text-gray-900 mt-1">{appointment.complete_address}</p>
+                      {/* Actions */}
+                      <div className="flex space-x-2 pt-3 border-t border-gray-200">
+                        <button
+                          onClick={() => openReturnToPendingModal(appointment.id)}
+                          disabled={loadingStates.returningToPending[appointment.id]}
+                          className="flex-1 bg-linear-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow"
+                        >
+                          {loadingStates.returningToPending[appointment.id] ? (
+                            <div className="flex items-center justify-center space-x-2">
+                              <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                              <span>Processing...</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-center space-x-1.5">
+                              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                              </svg>
+                              <span>Return</span>
+                            </div>
+                          )}
+                        </button>
+                        <button
+                          onClick={() => openCompleteModal(appointment.id)}
+                          disabled={loadingStates.completing[appointment.id]}
+                          className="flex-1 bg-linear-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow"
+                        >
+                          {loadingStates.completing[appointment.id] ? (
+                            <div className="flex items-center justify-center space-x-2">
+                              <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                              <span>Processing...</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-center space-x-1.5">
+                              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <span>Complete</span>
+                            </div>
+                          )}
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -163,71 +247,127 @@ const AppointmentList = ({
               {/* Desktop table view */}
               <div className="hidden md:block overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                  <thead className="bg-linear-to-r from-green-600 to-green-700">
                     <tr>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service(s)</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">AC Type(s)</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Technician(s)</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                      <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">ID</th>
+                      <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">Customer</th>
+                      <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">Contact</th>
+                      <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">Service(s)</th>
+                      <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">AC Type(s)</th>
+                      <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">Technician(s)</th>
+                      <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">Address</th>
+                      <th scope="col" className="px-6 py-4 text-center text-xs font-bold text-white uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {getPaginatedData().map((appointment: Appointment) => (
-                      <tr key={appointment.id} className="hover:bg-gray-50 transition-colors">
+                    {getPaginatedData().map((appointment: Appointment, idx: number) => (
+                      <tr key={appointment.id} className={`hover:bg-green-50 transition-colors duration-150 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
-                            <div className="bg-green-100 p-2 rounded-full mr-3">
-                              <svg className="h-4 w-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="bg-linear-to-br from-green-500 to-green-600 p-2 rounded-lg shadow-sm">
+                              <svg className="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                               </svg>
                             </div>
-                            <span className="text-sm font-medium text-gray-900">#{appointment.id}</span>
+                            <span className="ml-3 text-sm font-bold text-gray-900">#{appointment.id}</span>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">{appointment.name}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{appointment.phone}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{appointment.email || 'N/A'}</div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="text-sm text-gray-900 max-w-xs">
-                            {appointment.services ? parseServicesFormatted(typeof appointment.services === 'string' ? appointment.services : JSON.stringify(appointment.services)) : 'N/A'}
+                          <div className="flex items-center">
+                            <div className="bg-blue-100 p-2 rounded-full">
+                              <svg className="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                              </svg>
+                            </div>
+                            <span className="ml-3 text-sm font-semibold text-gray-900">{appointment.name}</span>
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="text-sm text-gray-900 max-w-xs">
-                            {appointment.services ? parseAcTypes(typeof appointment.services === 'string' ? appointment.services : JSON.stringify(appointment.services)) : 'N/A'}
+                          <div className="space-y-1">
+                            <div className="flex items-center text-sm text-gray-900">
+                              <svg className="h-3.5 w-3.5 mr-1.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                              </svg>
+                              <span className="font-medium">{appointment.phone}</span>
+                            </div>
+                            {appointment.email && (
+                              <div className="flex items-center text-xs text-gray-600">
+                                <svg className="h-3 w-3 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                                </svg>
+                                <span className="truncate max-w-[150px]" title={appointment.email}>{appointment.email}</span>
+                              </div>
+                            )}
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="text-sm text-gray-900">
-                            {appointment.technicians && appointment.technicians.length > 0
-                              ? appointment.technicians.join(', ')
-                              : (
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                  Not assigned
-                                </span>
-                              )}
+                          <div className="max-w-xs">
+                            {appointment.services ? (
+                              <div className="flex flex-wrap gap-1.5">
+                                {parseServicesFormatted(typeof appointment.services === 'string' ? appointment.services : JSON.stringify(appointment.services)).split(', ').map((service: string, i: number) => (
+                                  <span key={i} className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-200">
+                                    {service}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="text-gray-400 text-sm">N/A</span>
+                            )}
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="text-sm text-gray-900 max-w-xs">{appointment.complete_address}</div>
+                          <div className="max-w-xs">
+                            {appointment.services ? (
+                              <div className="flex flex-wrap gap-1.5">
+                                {parseAcTypes(typeof appointment.services === 'string' ? appointment.services : JSON.stringify(appointment.services)).split(', ').map((acType: string, i: number) => (
+                                  <span key={i} className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
+                                    {acType}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="text-gray-400 text-sm">N/A</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm">
+                            {appointment.technicians && appointment.technicians.length > 0 ? (
+                              <div className="flex flex-wrap gap-1.5">
+                                {appointment.technicians.map((tech: string, i: number) => (
+                                  <span key={i} className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                                    <svg className="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                    {tech}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-yellow-100 text-yellow-800 border border-yellow-200">
+                                <svg className="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                                Not assigned
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm text-gray-900 max-w-xs line-clamp-2" title={appointment.complete_address}>
+                            <svg className="h-3.5 w-3.5 inline mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            {appointment.complete_address}
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex space-x-2">
+                          <div className="flex justify-center space-x-2">
                             <button
                               onClick={() => openReturnToPendingModal(appointment.id)}
                               disabled={loadingStates.returningToPending[appointment.id]}
-                              className="bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
+                              className="group bg-linear-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-4 py-2 rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow transform hover:-translate-y-0.5"
                               title="Return to Pending"
                             >
                               {loadingStates.returningToPending[appointment.id] ? (
@@ -236,13 +376,18 @@ const AppointmentList = ({
                                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
                               ) : (
-                                'Return'
+                                <div className="flex items-center space-x-1">
+                                  <svg className="h-3.5 w-3.5 group-hover:rotate-180 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                                  </svg>
+                                  <span>Return</span>
+                                </div>
                               )}
                             </button>
                             <button
                               onClick={() => openCompleteModal(appointment.id)}
                               disabled={loadingStates.completing[appointment.id]}
-                              className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
+                              className="group bg-linear-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-2 rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow transform hover:-translate-y-0.5"
                             >
                               {loadingStates.completing[appointment.id] ? (
                                 <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
@@ -250,7 +395,12 @@ const AppointmentList = ({
                                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
                               ) : (
-                                'Complete'
+                                <div className="flex items-center space-x-1">
+                                  <svg className="h-3.5 w-3.5 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  </svg>
+                                  <span>Complete</span>
+                                </div>
                               )}
                             </button>
                           </div>

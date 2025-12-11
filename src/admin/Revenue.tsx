@@ -39,6 +39,12 @@ const Revenue = () => {
   const [totalAmount, setTotalAmount] = useState<number>(0);
   const [historyLoading, setHistoryLoading] = useState<boolean>(true);
   
+  // Filter states
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
+  const [selectedServiceType, setSelectedServiceType] = useState<string>('');
+  const [serviceTypes, setServiceTypes] = useState<string[]>([]);
+  
   // Pagination states
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage, setItemsPerPage] = useState<number>(10);
@@ -60,12 +66,27 @@ const Revenue = () => {
     computeTotalRevenue();
   }, [revenueData]);
 
-  // Load revenue history when history tab is active
+  // Load revenue history when history tab is active or filters change
   useEffect(() => {
     if (activeTab === 'history') {
       loadRevenueHistory();
     }
-  }, [activeTab, currentPage, itemsPerPage]);
+  }, [activeTab, currentPage, itemsPerPage, startDate, endDate, selectedServiceType]);
+
+  // Extract unique service types from history data
+  useEffect(() => {
+    if (history.length > 0) {
+      const uniqueServices = new Set<string>();
+      history.forEach(entry => {
+        if (entry.service_types) {
+          entry.service_types.split(', ').forEach(service => {
+            uniqueServices.add(service.trim());
+          });
+        }
+      });
+      setServiceTypes(Array.from(uniqueServices).sort());
+    }
+  }, [history]);
 
   // Calculate pagination
   useEffect(() => {
@@ -215,12 +236,18 @@ const Revenue = () => {
   const loadRevenueHistory = () => {
     setHistoryLoading(true);
     
-    apiClient.get('/revenue-history', {
-      params: {
-        page: currentPage,
-        perPage: itemsPerPage
-      }
-    })
+    // Build query parameters
+    const params: any = {
+      page: currentPage,
+      perPage: itemsPerPage
+    };
+    
+    // Add filters if they exist
+    if (startDate) params.start_date = startDate;
+    if (endDate) params.end_date = endDate;
+    if (selectedServiceType) params.service_type = selectedServiceType;
+    
+    apiClient.get('/revenue-history', { params })
       .then(response => {
         if (response.data.history) {
           // Ensure we have valid data
@@ -253,6 +280,14 @@ const Revenue = () => {
       return '₱ 0.00'; // Return default value if conversion fails
     }
     return `₱ ${numAmount.toFixed(2)}`;
+  };
+  
+  // Clear all filters
+  const clearFilters = (): void => {
+    setStartDate('');
+    setEndDate('');
+    setSelectedServiceType('');
+    setCurrentPage(1);
   };
 
   // Pagination handlers
@@ -511,8 +546,104 @@ const Revenue = () => {
 
   // Render Revenue History Tab
   const renderHistoryTab = () => {
+    const hasActiveFilters = startDate || endDate || selectedServiceType;
+    
     return (
       <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+        {/* Filter Section */}
+        <div className="bg-gray-50 border-b border-gray-200 p-6">
+          <div className="flex flex-col lg:flex-row gap-4">
+            {/* Date Range Filters */}
+            <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-2">
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  id="startDate"
+                  value={startDate}
+                  onChange={(e) => {
+                    setStartDate(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
+                />
+              </div>
+              <div>
+                <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-2">
+                  End Date
+                </label>
+                <input
+                  type="date"
+                  id="endDate"
+                  value={endDate}
+                  onChange={(e) => {
+                    setEndDate(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  min={startDate}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
+                />
+              </div>
+            </div>
+            
+            {/* Service Type Filter */}
+            <div className="flex-1">
+              <label htmlFor="serviceType" className="block text-sm font-medium text-gray-700 mb-2">
+                Service Type
+              </label>
+              <select
+                id="serviceType"
+                value={selectedServiceType}
+                onChange={(e) => {
+                  setSelectedServiceType(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors bg-white"
+              >
+                <option value="">All Services</option>
+                {serviceTypes.map((service, idx) => (
+                  <option key={idx} value={service}>{service}</option>
+                ))}\n              </select>
+            </div>
+            
+            {/* Clear Filters Button */}
+            {hasActiveFilters && (
+              <div className="flex items-end">
+                <button
+                  onClick={clearFilters}
+                  className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors duration-200 whitespace-nowrap h-fit"
+                >
+                  Clear Filters
+                </button>
+              </div>
+            )}
+          </div>
+          
+          {/* Active Filters Display */}
+          {hasActiveFilters && (
+            <div className="mt-4 flex flex-wrap gap-2">
+              <span className="text-sm font-medium text-gray-600">Active Filters:</span>
+              {startDate && (
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                  From: {new Date(startDate).toLocaleDateString()}
+                </span>
+              )}
+              {endDate && (
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                  To: {new Date(endDate).toLocaleDateString()}
+                </span>
+              )}
+              {selectedServiceType && (
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  Service: {selectedServiceType}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+        
         {historyLoading ? (
           <div className="flex flex-col items-center justify-center py-16 px-6">
             <div className="animate-spin rounded-full h-16 w-16 border-4 border-emerald-200 border-t-emerald-600 mb-4"></div>

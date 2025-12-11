@@ -9,6 +9,7 @@ const POLLING_INTERVAL_MS = 2 * 60 * 1000; // 2 minutes
 const MAX_NOTIFICATIONS_DISPLAY = 9;
 const LOCAL_STORAGE_KEY = 'processedAppointmentIds';
 
+// Type Definitions
 interface Service {
   type: string;
   date: string;
@@ -38,6 +39,14 @@ interface Notification {
 interface RevenueEntry {
   revenue_date: string;
   total_revenue: string | number;
+}
+
+interface AppointmentStats {
+  total: number;
+  pending: number;
+  accepted: number;
+  completed: number;
+  rejected: number;
 }
 
 // Utility functions for localStorage with error handling
@@ -250,44 +259,40 @@ const Dashboard = () => {
   };
 
   // Calculate appointment statistics for the summary cards (memoized)
-  const stats = useMemo(() => {
+  const stats = useMemo<AppointmentStats>(() => {
     const total = appointments.length;
-    const pending = appointments.filter(a => a.status && a.status.toLowerCase() === 'pending').length;
-    const accepted = appointments.filter(a => a.status && a.status.toLowerCase() === 'accepted').length;
-    const completed = appointments.filter(a => a.status && a.status.toLowerCase() === 'completed').length;
-    const rejected = appointments.filter(a => a.status && a.status.toLowerCase() === 'rejected').length;
+    const pending = appointments.filter(a => a.status?.toLowerCase() === 'pending').length;
+    const accepted = appointments.filter(a => a.status?.toLowerCase() === 'accepted').length;
+    const completed = appointments.filter(a => a.status?.toLowerCase() === 'completed').length;
+    const rejected = appointments.filter(a => a.status?.toLowerCase() === 'rejected').length;
     
     return { total, pending, accepted, completed, rejected };
   }, [appointments]);
 
   // Get today's accepted appointments (memoized)
-  const todaysSchedule = useMemo(() => {
+  const todaysSchedule = useMemo<Appointment[]>(() => {
     const today = new Date().toISOString().split('T')[0];
     
     return appointments.filter(appointment => {
       // Only show accepted appointments
-      if (!appointment.status || appointment.status.toLowerCase() !== 'accepted') {
-        return false;
-      }
+      if (appointment.status?.toLowerCase() !== 'accepted') return false;
       
       // Check if any service is scheduled for today
-      if (appointment.services) {
-        try {
-          const services = typeof appointment.services === 'string' 
-            ? JSON.parse(appointment.services) 
-            : appointment.services;
-          
-          return services.some((service: Service) => {
-            const serviceDate = new Date(service.date).toISOString().split('T')[0];
-            return serviceDate === today;
-          });
-        } catch (error) {
-          console.error('Error parsing services:', error);
-          return false;
-        }
-      }
+      if (!appointment.services) return false;
       
-      return false;
+      try {
+        const services: Service[] = typeof appointment.services === 'string' 
+          ? JSON.parse(appointment.services) 
+          : appointment.services;
+        
+        return services.some((service: Service) => {
+          const serviceDate = new Date(service.date).toISOString().split('T')[0];
+          return serviceDate === today;
+        });
+      } catch (error) {
+        console.error('Error parsing services for appointment:', appointment.id, error);
+        return false;
+      }
     });
   }, [appointments]);
 
@@ -432,52 +437,88 @@ const Dashboard = () => {
                     )}
                   </button>
                   
-                  {/* Notification Panel */}
+                  {/* Notification Panel - Improved UX */}
                   <AnimatePresence>
                     {showNotifications && (
                       <motion.div 
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.2 }}
-                        className="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-50"
+                        initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute right-0 top-full mt-3 w-80 sm:w-96 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50"
                       >
-                        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50">
-                          <h3 className="text-sm font-semibold text-gray-900">Notifications</h3>
+                        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-linear-to-r from-blue-50 to-indigo-50">
+                          <div className="flex items-center gap-2">
+                            <FaBell className="h-4 w-4 text-blue-600" />
+                            <h3 className="text-base font-bold text-gray-900">Notifications</h3>
+                            {unreadCount > 0 && (
+                              <span className="px-2 py-0.5 bg-blue-600 text-white text-xs font-bold rounded-full">
+                                {unreadCount}
+                              </span>
+                            )}
+                          </div>
                           {notifications.length > 0 && (
                             <button 
                               onClick={clearAllNotifications}
-                              className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                              className="text-xs text-blue-600 hover:text-blue-800 font-semibold transition-colors px-3 py-1 hover:bg-blue-100 rounded-md"
                             >
                               Clear all
                             </button>
                           )}
                         </div>
                         
-                        <div className="max-h-96 overflow-y-auto">
+                        <div className="max-h-128 overflow-y-auto">
                           {notifications.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-8 text-gray-500">
-                              <FaBell className="h-8 w-8 mb-2 text-gray-300" />
-                              <p className="text-sm">No new notifications</p>
+                            <div className="flex flex-col items-center justify-center py-12 px-4 text-gray-500">
+                              <div className="flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-3">
+                                <FaBell className="h-7 w-7 text-gray-400" />
+                              </div>
+                              <p className="text-sm font-semibold text-gray-700 mb-1">All caught up!</p>
+                              <p className="text-xs text-gray-500">No new notifications</p>
                             </div>
                           ) : (
-                            notifications.map(notification => (
-                              <div 
-                                key={notification.id}
-                                className={`px-4 py-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors duration-150 ${!notification.read ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''}`}
-                                onClick={() => handleNotificationClick(notification)}
-                              >
-                                <div className="flex justify-between items-start">
-                                  <div className="flex-1">
-                                    <p className="text-sm font-medium text-gray-900">{notification.title}</p>
-                                    <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
+                            <div className="divide-y divide-gray-100">
+                              {notifications.map(notification => (
+                                <motion.div 
+                                  key={notification.id}
+                                  initial={{ opacity: 0, x: -10 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  className={`px-5 py-4 cursor-pointer transition-all duration-150 ${
+                                    !notification.read 
+                                      ? 'bg-blue-50/80 hover:bg-blue-100/80 border-l-4 border-l-blue-500' 
+                                      : 'hover:bg-gray-50'
+                                  }`}
+                                  onClick={() => handleNotificationClick(notification)}
+                                >
+                                  <div className="flex gap-3">
+                                    <div className={`flex items-center justify-center w-10 h-10 rounded-lg shrink-0 ${
+                                      !notification.read ? 'bg-blue-600' : 'bg-gray-200'
+                                    }`}>
+                                      <FaBell className={`h-4 w-4 ${!notification.read ? 'text-white' : 'text-gray-500'}`} />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-start justify-between gap-2 mb-1">
+                                        <p className={`text-sm font-semibold ${!notification.read ? 'text-gray-900' : 'text-gray-700'}`}>
+                                          {notification.title}
+                                        </p>
+                                        <span className="text-xs text-gray-500 whitespace-nowrap">
+                                          {formatNotificationTime(notification.time)}
+                                        </span>
+                                      </div>
+                                      <p className="text-sm text-gray-600 leading-relaxed">
+                                        {notification.message}
+                                      </p>
+                                      {!notification.read && (
+                                        <div className="flex items-center gap-1.5 mt-2">
+                                          <span className="h-1.5 w-1.5 bg-blue-600 rounded-full"></span>
+                                          <span className="text-xs font-medium text-blue-600">New</span>
+                                        </div>
+                                      )}
+                                    </div>
                                   </div>
-                                  <span className="text-xs text-gray-500 ml-2 whitespace-nowrap">
-                                    {formatNotificationTime(notification.time)}
-                                  </span>
-                                </div>
-                              </div>
-                            ))
+                                </motion.div>
+                              ))}
+                            </div>
                           )}
                         </div>
                       </motion.div>
@@ -495,13 +536,13 @@ const Dashboard = () => {
         </div>
         
         {/* Main Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           {/* Error Message */}
           {error && (
             <motion.div 
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg shadow-sm"
+              className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-xl shadow-sm"
             >
               <div className="flex items-start gap-3">
                 <FaExclamationTriangle className="h-5 w-5 text-red-600 mt-0.5 shrink-0" />
@@ -519,13 +560,13 @@ const Dashboard = () => {
             </motion.div>
           )}
           {/* Stats Overview */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 lg:gap-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-6">
             {/* Total Appointments Card */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.1 }}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md hover:scale-105 transition-all duration-200"
+              className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
             >
                 <div className="flex items-start justify-between mb-4">
                 <div>
@@ -546,7 +587,7 @@ const Dashboard = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.2 }}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md hover:scale-105 transition-all duration-200"
+              className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
             >
               <div className="flex items-center justify-between mb-4">
                 <div>
@@ -579,7 +620,7 @@ const Dashboard = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.3 }}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md hover:scale-105 transition-all duration-200"
+              className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
             >
               <div className="flex items-center justify-between mb-4">
                 <div>
@@ -601,7 +642,7 @@ const Dashboard = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.4 }}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md hover:scale-105 transition-all duration-200"
+              className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
             >
               <div className="flex items-center justify-between mb-4">
                 <div>
@@ -623,7 +664,7 @@ const Dashboard = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.5 }}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md hover:scale-105 transition-all duration-200"
+              className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
             >
               <div className="flex items-center justify-between mb-4">
                 <div>
@@ -642,63 +683,61 @@ const Dashboard = () => {
             </motion.div>
           </div>
           
-          {/* Performance Metrics Section */}
+          {/* Performance Metrics Section - Compact Design */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.6 }}
-            className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200"
+            className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow duration-200"
           >
-            <h2 className="flex items-center gap-3 text-xl font-bold text-gray-900 mb-6">
-              <span className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-lg">
-                <FaChartLine className="h-5 w-5 text-indigo-600" />
-              </span>
-              Performance Metrics
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+            <div className="flex items-center gap-2 mb-3">
+              <FaChartLine className="h-4 w-4 text-indigo-600" />
+              <h2 className="text-base font-semibold text-gray-900">Performance Overview</h2>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
               {/* Acceptance Rate */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <div className="flex justify-between items-center mb-3">
-                  <span className="text-sm font-medium text-gray-600">Acceptance Rate</span>
-                  <span className="text-lg font-bold text-gray-900">
+              <div className="bg-linear-to-br from-blue-50 to-blue-100/50 rounded-lg p-3">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-medium text-gray-600">Acceptance</span>
+                  <span className="text-base font-bold text-blue-700">
                     {stats.total ? Math.round((stats.accepted / stats.total) * 100) : 0}%
                   </span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="w-full bg-white/60 rounded-full h-1.5">
                   <div 
-                    className="bg-blue-500 h-2 rounded-full transition-all duration-500" 
+                    className="bg-blue-600 h-1.5 rounded-full transition-all duration-500" 
                     style={{ width: `${stats.total ? Math.round((stats.accepted / stats.total) * 100) : 0}%` }}
                   ></div>
                 </div>
               </div>
               
               {/* Completion Rate */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <div className="flex justify-between items-center mb-3">
-                  <span className="text-sm font-medium text-gray-600">Completion Rate</span>
-                  <span className="text-lg font-bold text-gray-900">
+              <div className="bg-linear-to-br from-green-50 to-green-100/50 rounded-lg p-3">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-medium text-gray-600">Completion</span>
+                  <span className="text-base font-bold text-green-700">
                     {stats.total ? Math.round((stats.completed / stats.total) * 100) : 0}%
                   </span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="w-full bg-white/60 rounded-full h-1.5">
                   <div 
-                    className="bg-green-500 h-2 rounded-full transition-all duration-500"
+                    className="bg-green-600 h-1.5 rounded-full transition-all duration-500"
                     style={{ width: `${stats.total ? Math.round((stats.completed / stats.total) * 100) : 0}%` }}
                   ></div>
                 </div>
               </div>
               
               {/* Cancellation Rate */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <div className="flex justify-between items-center mb-3">
-                  <span className="text-sm font-medium text-gray-600">Cancellation Rate</span>
-                  <span className="text-lg font-bold text-gray-900">
+              <div className="bg-linear-to-br from-red-50 to-red-100/50 rounded-lg p-3">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-medium text-gray-600">Cancellation</span>
+                  <span className="text-base font-bold text-red-700">
                     {stats.total ? Math.round((stats.rejected / stats.total) * 100) : 0}%
                   </span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="w-full bg-white/60 rounded-full h-1.5">
                   <div 
-                    className="bg-red-500 h-2 rounded-full transition-all duration-500"
+                    className="bg-red-600 h-1.5 rounded-full transition-all duration-500"
                     style={{ width: `${stats.total ? Math.round((stats.rejected / stats.total) * 100) : 0}%` }}
                   ></div>
                 </div>
@@ -706,31 +745,43 @@ const Dashboard = () => {
             </div>
           </motion.div>
           
-          {/* Today's Schedule Section */}
+          {/* Today's Schedule Section - Enhanced Focus */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.7 }}
-            className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200 mt-8"
+            className="bg-linear-to-br from-green-50 to-emerald-50 rounded-xl shadow-md border border-green-200 p-6 hover:shadow-lg transition-all duration-200 mt-6"
           >
-            <h2 className="flex items-center gap-3 text-xl font-bold text-gray-900 mb-6">
-              <span className="flex items-center justify-center w-10 h-10 bg-green-100 rounded-lg">
-                <FaCalendarAlt className="h-5 w-5 text-green-600" />
-              </span>
-              Today's Schedule
-              <span className="ml-auto text-sm font-normal text-gray-500">
-                {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-              </span>
-            </h2>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center w-12 h-12 bg-green-600 rounded-xl shadow-sm">
+                  <FaCalendarAlt className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Today's Schedule</h2>
+                  <p className="text-sm text-gray-600 mt-0.5">
+                    {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                  </p>
+                </div>
+              </div>
+              {todaysSchedule.length > 0 && (
+                <div className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg shadow-sm">
+                  <FaCalendarAlt className="h-4 w-4" />
+                  <span className="font-semibold">{todaysSchedule.length} Appointment{todaysSchedule.length !== 1 ? 's' : ''}</span>
+                </div>
+              )}
+            </div>
             
             {todaysSchedule.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-gray-500">
-                <FaCalendarAlt className="h-12 w-12 mb-3 text-gray-300" />
-                <p className="text-base font-medium">No appointments scheduled for today</p>
-                <p className="text-sm text-gray-400 mt-1">Check back later or view all appointments</p>
+              <div className="flex flex-col items-center justify-center py-16 px-4 bg-white/50 rounded-xl border-2 border-dashed border-gray-300">
+                <div className="flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-4">
+                  <FaCalendarAlt className="h-10 w-10 text-gray-400" />
+                </div>
+                <p className="text-lg font-semibold text-gray-700 mb-1">No appointments scheduled for today</p>
+                <p className="text-sm text-gray-500">Your schedule is clear. Check back later or view all appointments.</p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="grid gap-4">
                 {todaysSchedule.map((appointment, index) => {
                   const services = typeof appointment.services === 'string' 
                     ? JSON.parse(appointment.services) 
@@ -742,71 +793,91 @@ const Dashboard = () => {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.3, delay: index * 0.1 }}
-                      className="bg-green-50 rounded-lg border border-green-200 p-4 hover:shadow-md transition-all duration-200"
+                      className="bg-white rounded-xl border-2 border-green-200 p-5 hover:shadow-lg hover:border-green-300 transition-all duration-200 group"
                     >
-                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                        {/* Customer Info */}
-                        <div className="flex items-start gap-3">
-                          <div className="flex items-center justify-center w-10 h-10 bg-green-100 rounded-full shrink-0">
-                            <FaUser className="h-5 w-5 text-green-600" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-gray-900 truncate">
-                              {appointment.name}
-                            </h3>
-                            {appointment.phone && (
-                              <div className="flex items-center gap-1 text-sm text-gray-600 mt-1">
-                                <FaPhone className="h-3 w-3" />
-                                <span>{appointment.phone}</span>
-                              </div>
-                            )}
-                            {appointment.complete_address && (
-                              <div className="flex items-start gap-1 text-sm text-gray-600 mt-1">
-                                <FaMapMarkerAlt className="h-3 w-3 mt-0.5 shrink-0" />
-                                <span className="line-clamp-2">{appointment.complete_address}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        
-                        {/* Services Info */}
-                        <div className="flex flex-col">
-                          <span className="text-xs font-medium text-gray-500 uppercase mb-2">Services</span>
-                          <div className="space-y-1">
-                            {services.map((service: Service, idx: number) => (
-                              <div key={idx} className="flex items-center gap-2">
-                                <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-green-100 text-green-700">
-                                  {service.type}
-                                </span>
-                                {service.ac_types && service.ac_types.length > 0 && (
-                                  <span className="text-xs text-gray-500">
-                                    {service.ac_types.join(', ')}
-                                  </span>
+                      <div className="flex flex-col lg:flex-row gap-5">
+                        {/* Left Section - Customer Info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start gap-4">
+                            <div className="flex items-center justify-center w-14 h-14 bg-linear-to-br from-green-500 to-emerald-600 rounded-xl shadow-md shrink-0 group-hover:scale-110 transition-transform duration-200">
+                              <FaUser className="h-6 w-6 text-white" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-lg font-bold text-gray-900 mb-2">
+                                {appointment.name}
+                              </h3>
+                              <div className="space-y-1.5">
+                                {appointment.phone && (
+                                  <div className="flex items-center gap-2 text-sm text-gray-700">
+                                    <div className="flex items-center justify-center w-6 h-6 bg-blue-100 rounded-md">
+                                      <FaPhone className="h-3 w-3 text-blue-600" />
+                                    </div>
+                                    <span className="font-medium">{appointment.phone}</span>
+                                  </div>
+                                )}
+                                {appointment.complete_address && (
+                                  <div className="flex items-start gap-2 text-sm text-gray-700">
+                                    <div className="flex items-center justify-center w-6 h-6 bg-orange-100 rounded-md shrink-0 mt-0.5">
+                                      <FaMapMarkerAlt className="h-3 w-3 text-orange-600" />
+                                    </div>
+                                    <span className="line-clamp-2 leading-relaxed">{appointment.complete_address}</span>
+                                  </div>
                                 )}
                               </div>
-                            ))}
+                            </div>
                           </div>
                         </div>
                         
-                        {/* Technicians Info */}
-                        <div className="flex flex-col">
-                          <span className="text-xs font-medium text-gray-500 uppercase mb-2">Assigned Technicians</span>
-                          {appointment.technicians && appointment.technicians.length > 0 ? (
-                            <div className="flex flex-wrap gap-1">
-                              {appointment.technicians.map((tech, idx) => (
-                                <span 
-                                  key={idx}
-                                  className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-700"
-                                >
-                                  {tech}
-                                </span>
+                        {/* Right Section - Services & Technicians */}
+                        <div className="flex flex-col sm:flex-row gap-5 lg:min-w-[400px]">
+                          {/* Services */}
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="w-1 h-5 bg-green-600 rounded-full"></div>
+                              <span className="text-xs font-bold text-gray-600 uppercase tracking-wide">Services</span>
+                            </div>
+                            <div className="space-y-2">
+                              {services.map((service: Service, idx: number) => (
+                                <div key={idx} className="flex flex-col gap-1">
+                                  <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-semibold bg-green-600 text-white shadow-sm w-fit">
+                                    {service.type}
+                                  </span>
+                                  {service.ac_types && service.ac_types.length > 0 && (
+                                    <span className="text-xs text-gray-600 ml-1">
+                                      {service.ac_types.join(', ')}
+                                    </span>
+                                  )}
+                                </div>
                               ))}
                             </div>
-                          ) : (
-                            <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-yellow-100 text-yellow-700 w-fit">
-                              Not assigned
-                            </span>
-                          )}
+                          </div>
+                          
+                          {/* Technicians */}
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="w-1 h-5 bg-blue-600 rounded-full"></div>
+                              <span className="text-xs font-bold text-gray-600 uppercase tracking-wide">Technicians</span>
+                            </div>
+                            {appointment.technicians && appointment.technicians.length > 0 ? (
+                              <div className="flex flex-wrap gap-2">
+                                {appointment.technicians.map((tech, idx) => (
+                                  <span 
+                                    key={idx}
+                                    className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-semibold bg-blue-600 text-white shadow-sm"
+                                  >
+                                    {tech}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-yellow-50 border border-yellow-200 w-fit">
+                                <FaExclamationTriangle className="h-3 w-3 text-yellow-600" />
+                                <span className="text-sm font-medium text-yellow-800">
+                                  Not assigned yet
+                                </span>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </motion.div>
