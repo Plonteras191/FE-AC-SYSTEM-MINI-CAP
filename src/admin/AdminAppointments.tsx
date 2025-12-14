@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import PageWrapper from '../components/PageWrapper.tsx';
 import { appointmentsApi } from '../services/api.tsx';
 import AppointmentList from '../components/Admin Appointments/AppointmentList.tsx';
@@ -143,10 +144,20 @@ const AdminAppointments = () => {
   // Add custom technician
   const addCustomTechnician = () => {
     const name = customTechnicianInput.trim();
-    if (name && !selectedTechnicians.includes(name)) {
-      setSelectedTechnicians(prev => [...prev, name]);
-      setCustomTechnicianInput('');
+    if (!name) {
+      toast.warning("Please enter a technician name");
+      return;
     }
+    
+    if (selectedTechnicians.includes(name)) {
+      toast.info("Technician already selected");
+      return;
+    }
+    
+    // Add to selected technicians - will be saved to database when appointment is accepted
+    setSelectedTechnicians(prev => [...prev, name]);
+    setCustomTechnicianInput('');
+    toast.success(`"${name}" added to selected technicians`);
   };
 
   // Handle Enter key for custom technician input

@@ -8,7 +8,7 @@ const ReportTabs = ({ activeTab, setActiveTab }: ReportTabsProps) => {
     { id: 'overview', label: 'Overview' },
     { id: 'completed', label: 'Completed' },
     { id: 'pending', label: 'Pending/Accepted' },
-    { id: 'rejected', label: 'Rejected' },
+    { id: 'cancelled', label: 'Cancelled' },
     { id: 'revenue', label: 'Revenue History' }
   ];
 

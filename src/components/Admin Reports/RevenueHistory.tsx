@@ -16,7 +16,7 @@ interface RevenueEntry {
 interface CurrentPage {
   completed: number;
   pending: number;
-  rejected: number;
+  cancelled: number;
   revenue: number;
 }
 

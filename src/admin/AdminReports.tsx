@@ -35,7 +35,7 @@ interface RevenueEntry {
 interface CurrentPage {
   completed: number;
   pending: number;
-  rejected: number;
+  cancelled: number;
   revenue: number;
 }
 
@@ -52,7 +52,7 @@ const AdminReports = () => {
   const [currentPage, setCurrentPage] = useState<CurrentPage>({
     completed: 1,
     pending: 1,
-    rejected: 1,
+    cancelled: 1,
     revenue: 1
   });
   const itemsPerPage = 6;
@@ -105,7 +105,7 @@ const AdminReports = () => {
     setCurrentPage({
       completed: 1,
       pending: 1,
-      rejected: 1,
+      cancelled: 1,
       revenue: 1
     });
   }, [activeTab]);
@@ -143,8 +143,8 @@ const AdminReports = () => {
     appt.status && appt.status.toLowerCase() === 'accepted'
   );
   
-  const rejectedAppointments = appointments.filter(appt => 
-    appt.status && appt.status.toLowerCase() === 'rejected'
+  const cancelledAppointments = appointments.filter(appt => 
+    appt.status && appt.status.toLowerCase() === 'cancelled'
   );
 
   // Get paginated data
@@ -346,9 +346,9 @@ const AdminReports = () => {
         data = [...pendingAppointments, ...acceptedAppointments];
         filename = 'pending-appointments';
         break;
-      case 'rejected':
-        data = rejectedAppointments;
-        filename = 'rejected-appointments';
+      case 'cancelled':
+        data = cancelledAppointments;
+        filename = 'cancelled-appointments';
         break;
       case 'revenue':
         data = filteredRevenueHistory;
@@ -377,9 +377,9 @@ const AdminReports = () => {
     currentPage.pending
   );
   
-  const paginatedRejectedAppointments = getPaginatedData(
-    rejectedAppointments, 
-    currentPage.rejected
+  const paginatedCancelledAppointments = getPaginatedData(
+    cancelledAppointments, 
+    currentPage.cancelled
   );
   
   const paginatedRevenueHistory = getPaginatedData(
@@ -473,10 +473,10 @@ const AdminReports = () => {
               completeAppointments={completeAppointments}
               pendingAppointments={pendingAppointments}
               acceptedAppointments={acceptedAppointments}
-              rejectedAppointments={rejectedAppointments}
+              cancelledAppointments={cancelledAppointments || []}
               paginatedCompletedAppointments={paginatedCompletedAppointments}
               paginatedPendingAppointments={paginatedPendingAppointments}
-              paginatedRejectedAppointments={paginatedRejectedAppointments}
+              paginatedCancelledAppointments={paginatedCancelledAppointments || []}
               parseServices={parseServices}
               getAppointmentDate={getAppointmentDate}
               currentPage={currentPage}

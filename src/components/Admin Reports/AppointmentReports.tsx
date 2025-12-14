@@ -22,7 +22,7 @@ interface Appointment {
 interface CurrentPage {
   completed: number;
   pending: number;
-  rejected: number;
+  cancelled: number;
 }
 
 interface AppointmentReportsProps {
@@ -30,10 +30,10 @@ interface AppointmentReportsProps {
   completeAppointments: Appointment[];
   pendingAppointments: Appointment[];
   acceptedAppointments: Appointment[];
-  rejectedAppointments: Appointment[];
+  cancelledAppointments: Appointment[];
   paginatedCompletedAppointments: Appointment[];
   paginatedPendingAppointments: Appointment[];
-  paginatedRejectedAppointments: Appointment[];
+  paginatedCancelledAppointments: Appointment[];
   parseServices: (servicesStr: string) => Service[];
   getAppointmentDate: (appointment: Appointment) => string;
   currentPage: CurrentPage;
@@ -47,10 +47,10 @@ const AppointmentReports = ({
   completeAppointments,
   pendingAppointments,
   acceptedAppointments,
-  rejectedAppointments,
+  cancelledAppointments,
   paginatedCompletedAppointments,
   paginatedPendingAppointments,
-  paginatedRejectedAppointments,
+  paginatedCancelledAppointments,
   parseServices,
   getAppointmentDate,
   currentPage,
@@ -143,18 +143,18 @@ const AppointmentReports = ({
             </div>
           </div>
 
-          {/* Rejected Appointments */}
+          {/* Cancelled Appointments */}
           <div className="bg-linear-to-br from-red-50 to-rose-50 rounded-lg p-6 border border-red-200">
             <div className="flex items-center gap-3 mb-4">
               <div className="flex items-center justify-center w-10 h-10 bg-red-100 rounded-lg">
                 <FaBan className="h-5 w-5 text-red-600" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900">Rejected</h3>
+              <h3 className="text-lg font-bold text-gray-900">Cancelled</h3>
             </div>
             <div className="space-y-3 max-h-96 overflow-y-auto">
-              {rejectedAppointments.length > 0 ? (
+              {cancelledAppointments?.length > 0 ? (
                 <>
-                  {rejectedAppointments.slice(0, 5).map(app => (
+                  {cancelledAppointments.slice(0, 5).map(app => (
                     <div key={app.id} className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xs font-semibold text-gray-500">#{app.id}</span>
@@ -166,17 +166,17 @@ const AppointmentReports = ({
                       </div>
                     </div>
                   ))}
-                  {rejectedAppointments.length > 5 && (
+                  {cancelledAppointments?.length > 5 && (
                     <button 
-                      onClick={() => setActiveTab('rejected')}
+                      onClick={() => setActiveTab('cancelled')}
                       className="w-full mt-3 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors"
                     >
-                      View all {rejectedAppointments.length} appointments
+                      View all {cancelledAppointments?.length || 0} appointments
                     </button>
                   )}
                 </>
               ) : (
-                <div className="text-center py-8 text-gray-500">No rejected appointments.</div>
+                <div className="text-center py-8 text-gray-500">No cancelled appointments.</div>
               )}
             </div>
           </div>
@@ -214,17 +214,17 @@ const AppointmentReports = ({
         />
       )}
 
-      {activeTab === 'rejected' && (
+      {activeTab === 'cancelled' && (
         <AppointmentSection
-          title="All Rejected Appointments"
+          title="All Cancelled Appointments"
           icon={<FaBan className="h-5 w-5 text-red-600" />}
-          appointments={paginatedRejectedAppointments}
-          totalAppointments={rejectedAppointments.length}
-          statusBadge="rejected"
-          currentPage={currentPage.rejected}
+          appointments={paginatedCancelledAppointments}
+          totalAppointments={cancelledAppointments.length}
+          statusBadge="cancelled"
+          currentPage={currentPage.cancelled}
           getTotalPages={getTotalPages}
           handlePageChange={handlePageChange}
-          section="rejected"
+          section="cancelled"
           parseServices={parseServices}
         />
       )}
@@ -263,7 +263,7 @@ const AppointmentSection = ({
         <div className="flex items-center gap-3">
           <div className={`flex items-center justify-center w-10 h-10 rounded-lg ${
             statusBadge === 'completed' ? 'bg-green-100' :
-            statusBadge === 'rejected' ? 'bg-red-100' : 'bg-yellow-100'
+            statusBadge === 'cancelled' ? 'bg-red-100' : 'bg-yellow-100'
           }`}>
             {icon}
           </div>
@@ -285,7 +285,7 @@ const AppointmentSection = ({
                     <span className={`px-3 py-1 text-xs font-medium rounded-full ${
                       (app.status?.toLowerCase() || statusBadge) === 'completed' 
                         ? 'bg-green-100 text-green-800'
-                        : (app.status?.toLowerCase() || statusBadge) === 'rejected'
+                        : (app.status?.toLowerCase() || statusBadge) === 'cancelled'
                         ? 'bg-red-100 text-red-800'
                         : (app.status?.toLowerCase() || statusBadge) === 'accepted'
                         ? 'bg-blue-100 text-blue-800'
