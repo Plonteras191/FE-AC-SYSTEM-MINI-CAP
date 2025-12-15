@@ -2,6 +2,8 @@ interface Appointment {
   id: number;
   name: string;
   services: string;
+  technicians?: string[];
+  technician_names?: string[];
 }
 
 interface RevenueTableProps {
@@ -47,6 +49,7 @@ const RevenueTable = ({
               <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">ID</th>
               <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">Customer</th>
               <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">Service</th>
+              <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">Technician(s)</th>
               <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">Date</th>
               <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">Revenue (₱)</th>
             </tr>
@@ -54,6 +57,7 @@ const RevenueTable = ({
           <tbody className="divide-y divide-gray-200">
             {appointments.map(appt => {
               const { service, date } = getServiceInfo(appt.services);
+              const technicians = appt.technicians || appt.technician_names || [];
               
               return (
                 <tr key={appt.id} className="hover:bg-emerald-50 transition-colors duration-150">
@@ -65,6 +69,22 @@ const RevenueTable = ({
                   </td>
                   <td className="px-6 py-4">
                     <span className="text-sm text-gray-700">{service}</span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex flex-wrap gap-1">
+                      {technicians.length > 0 ? (
+                        technicians.map((tech, i) => (
+                          <span key={i} className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                            <svg className="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            {tech}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-gray-400 text-sm">N/A</span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="text-sm text-gray-600">{date}</span>
@@ -94,6 +114,7 @@ const RevenueTable = ({
       <div className="md:hidden divide-y divide-gray-200">
         {appointments.map(appt => {
           const { service, date } = getServiceInfo(appt.services);
+          const technicians = appt.technicians || appt.technician_names || [];
           
           return (
             <div key={appt.id} className="p-4 hover:bg-emerald-50 transition-colors duration-150">
@@ -107,6 +128,20 @@ const RevenueTable = ({
                 <div className="flex items-start">
                   <span className="text-xs font-medium text-gray-500 w-20">Service:</span>
                   <span className="text-sm text-gray-700 flex-1">{service}</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="text-xs font-medium text-gray-500 w-20">Technician:</span>
+                  <div className="flex flex-wrap gap-1 flex-1">
+                    {technicians.length > 0 ? (
+                      technicians.map((tech, i) => (
+                        <span key={i} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                          {tech}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-gray-400 text-sm">N/A</span>
+                    )}
+                  </div>
                 </div>
                 <div className="flex items-start">
                   <span className="text-xs font-medium text-gray-500 w-20">Date:</span>

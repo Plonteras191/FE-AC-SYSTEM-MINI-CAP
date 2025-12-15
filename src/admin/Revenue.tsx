@@ -17,6 +17,8 @@ interface Appointment {
   id: number;
   name: string;
   services: string;
+  technicians?: string[];
+  technician_names?: string[];
 }
 
 interface RevenueEntry {
@@ -179,11 +181,13 @@ const Revenue = () => {
     const appointmentDetails = appointments.map(appt => {
       const revenue = parseFloat(revenueData[appt.id] || '0');
       const services = getAppointmentServices(appt);
+      const technicians = appt.technicians || appt.technician_names || [];
       
       return {
         id: appt.id,
         net_revenue: revenue, // This aligns with your controller's expected structure
-        service_types: services
+        service_types: services,
+        technician_names: technicians
       };
     });
 

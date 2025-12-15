@@ -256,7 +256,7 @@ const AdminAppointments = () => {
                   </svg>
                 </div>
                 <div>
-                  <h2 className="text-3xl font-bold text-gray-900">Admin Appointments</h2>
+                  <h2 className="text-3xl font-bold text-gray-900">Admin Appointments Management</h2>
                   <p className="text-gray-600 mt-1">Manage and track appointment requests</p>
                 </div>
               </div>
