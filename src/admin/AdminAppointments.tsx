@@ -56,6 +56,10 @@ const AdminAppointments = () => {
   const [activeTab, setActiveTab] = useState<'pending' | 'accepted'>('pending');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage, setItemsPerPage] = useState<number>(5);
+  
+  // Search and filter states
+  const [searchName, setSearchName] = useState<string>('');
+  const [filterService, setFilterService] = useState<string>('');
     useEffect(() => {
     fetchAppointments();
     fetchTechnicians();
@@ -208,6 +212,8 @@ const AdminAppointments = () => {
   const handleTabChange = (tab: 'pending' | 'accepted') => {
     setActiveTab(tab);
     setCurrentPage(1); // Reset pagination when switching tabs
+    setSearchName(''); // Reset search
+    setFilterService(''); // Reset filter
   };
 
   // Pagination handlers
@@ -220,18 +226,52 @@ const AdminAppointments = () => {
     setCurrentPage(1);
   };
 
-  // Calculate pagination for current view
-  const getPaginatedData = () => {
+  // Filter appointments by search and service
+  const getFilteredAppointments = () => {
     const currentData = activeTab === 'pending' ? appointments : acceptedAppointments;
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    return currentData.slice(indexOfFirstItem, indexOfLastItem);
+    
+    return currentData.filter(appointment => {
+      // Filter by name (search)
+      const matchesName = searchName === '' || 
+        appointment.name.toLowerCase().includes(searchName.toLowerCase());
+      
+      // Filter by service
+      let matchesService = true;
+      if (filterService !== '') {
+        try {
+          // Handle both string and Service[] types
+          const servicesData = typeof appointment.services === 'string' 
+            ? parseServices(appointment.services) 
+            : appointment.services;
+          matchesService = servicesData.some(service => 
+            service.type.toLowerCase() === filterService.toLowerCase()
+          );
+        } catch {
+          matchesService = false;
+        }
+      }
+      
+      return matchesName && matchesService;
+    });
   };
 
-  // Calculate total pages
-  const totalPages = Math.ceil(
-    (activeTab === 'pending' ? appointments.length : acceptedAppointments.length) / itemsPerPage
-  );
+  // Calculate pagination for current view
+  const getPaginatedData = () => {
+    const filteredData = getFilteredAppointments();
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    return filteredData.slice(indexOfFirstItem, indexOfLastItem);
+  };
+
+  // Calculate total pages based on filtered data
+  const totalPages = Math.ceil(getFilteredAppointments().length / itemsPerPage);
+
+  // Clear all filters
+  const clearFilters = () => {
+    setSearchName('');
+    setFilterService('');
+    setCurrentPage(1);
+  };
 
   // Check if loading any operation
   const isAnyLoading = loadingStates.fetching || 
@@ -380,6 +420,135 @@ const AdminAppointments = () => {
 
             {/* Content Area */}
             <div className="p-6 sm:p-8">
+              {/* Search and Filter Section */}
+              <div className="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Search by Name */}
+                  <div>
+                    <label htmlFor="search-name" className="block text-sm font-medium text-gray-700 mb-2">
+                      Search by Customer Name
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        id="search-name"
+                        value={searchName}
+                        onChange={(e) => {
+                          setSearchName(e.target.value);
+                          setCurrentPage(1);
+                        }}
+                        placeholder="Enter customer name..."
+                        className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                      <svg
+                        className="absolute left-3 top-2.5 h-5 w-5 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+
+                  {/* Filter by Service */}
+                  <div>
+                    <label htmlFor="filter-service" className="block text-sm font-medium text-gray-700 mb-2">
+                      Filter by Service Type
+                    </label>
+                    <select
+                      id="filter-service"
+                      value={filterService}
+                      onChange={(e) => {
+                        setFilterService(e.target.value);
+                        setCurrentPage(1);
+                      }}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="">All Services</option>
+                      <option value="Installation">Installation</option>
+                      <option value="Repair">Repair</option>
+                      <option value="Maintenance">Maintenance</option>
+                      <option value="Cleaning">Cleaning</option>
+                    </select>
+                  </div>
+
+                  {/* Clear Filters Button */}
+                  <div className="flex items-end">
+                    <button
+                      onClick={clearFilters}
+                      disabled={searchName === '' && filterService === ''}
+                      className={`w-full px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
+                        searchName === '' && filterService === ''
+                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                          : 'bg-red-500 text-white hover:bg-red-600'
+                      }`}
+                    >
+                      <div className="flex items-center justify-center space-x-2">
+                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                        <span>Clear Filters</span>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Active Filters Display */}
+                {(searchName !== '' || filterService !== '') && (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <span className="text-sm font-medium text-gray-700">Active filters:</span>
+                    {searchName !== '' && (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
+                        Name: "{searchName}"
+                        <button
+                          onClick={() => {
+                            setSearchName('');
+                            setCurrentPage(1);
+                          }}
+                          className="ml-2 hover:text-blue-900"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    )}
+                    {filterService !== '' && (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">
+                        Service: {filterService}
+                        <button
+                          onClick={() => {
+                            setFilterService('');
+                            setCurrentPage(1);
+                          }}
+                          className="ml-2 hover:text-green-900"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {/* Results Count */}
+                <div className="mt-3 text-sm text-gray-600">
+                  Showing <span className="font-semibold">{getFilteredAppointments().length}</span> of{' '}
+                  <span className="font-semibold">
+                    {activeTab === 'pending' ? appointments.length : acceptedAppointments.length}
+                  </span>{' '}
+                  appointments
+                </div>
+              </div>
+
               <PaginationControls
                 itemsPerPage={itemsPerPage}
                 handleItemsPerPageChange={handleItemsPerPageChange}

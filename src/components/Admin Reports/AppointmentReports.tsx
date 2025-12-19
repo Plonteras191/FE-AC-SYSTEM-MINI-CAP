@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { FaCheckCircle, FaClock, FaBan, FaCalendarAlt } from 'react-icons/fa';
-import TechniciansList from '../TechniciansList';
+import AppointmentDetailsModal from '../Admin Appointments/AppointmentDetailsModal';
+import type { Appointment } from '../../types/appointment';
 
 // Type definitions
 interface Service {
@@ -8,16 +10,7 @@ interface Service {
   ac_types?: string[];
 }
 
-interface Appointment {
-  id: number | string;
-  name: string;
-  phone: string;
-  email?: string;
-  complete_address: string;
-  services?: string;
-  status?: string;
-  technicians?: string[];
-}
+
 
 interface CurrentPage {
   completed: number;
@@ -58,12 +51,36 @@ const AppointmentReports = ({
   handlePageChange,
   setActiveTab
 }: AppointmentReportsProps) => {
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+
+  const handleViewDetails = (appointment: Appointment) => {
+    setSelectedAppointment(appointment);
+    setViewModalOpen(true);
+  };
+
+  const handleCloseViewModal = () => {
+    setViewModalOpen(false);
+    setSelectedAppointment(null);
+  };
+
+  // Helper to format services for display
+  const formatServicesPreview = (servicesData: string | Service[] | undefined): string => {
+    if (!servicesData) return 'N/A';
+    try {
+      const services = typeof servicesData === 'string' ? parseServices(servicesData) : servicesData;
+      return services.map(s => s.type).slice(0, 2).join(', ');
+    } catch {
+      return 'N/A';
+    }
+  };
+
   return (
     <div className="p-6">
       {activeTab === 'overview' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Completed Appointments */}
-          <div className="bg-linear-to-br from-green-50 to-emerald-50 rounded-lg p-6 border border-green-200">
+          <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-6 border border-green-200">
             <div className="flex items-center gap-3 mb-4">
               <div className="flex items-center justify-center w-10 h-10 bg-green-100 rounded-lg">
                 <FaCheckCircle className="h-5 w-5 text-green-600" />
@@ -86,7 +103,7 @@ const AppointmentReports = ({
                     </div>
                   ))}
                   {completeAppointments.length > 5 && (
-                    <button 
+                    <button
                       onClick={() => setActiveTab('completed')}
                       className="w-full mt-3 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
                     >
@@ -101,7 +118,7 @@ const AppointmentReports = ({
           </div>
 
           {/* Active Appointments */}
-          <div className="bg-linear-to-br from-yellow-50 to-amber-50 rounded-lg p-6 border border-yellow-200">
+          <div className="bg-gradient-to-br from-yellow-50 to-amber-50 rounded-lg p-6 border border-yellow-200">
             <div className="flex items-center gap-3 mb-4">
               <div className="flex items-center justify-center w-10 h-10 bg-yellow-100 rounded-lg">
                 <FaClock className="h-5 w-5 text-yellow-600" />
@@ -129,7 +146,7 @@ const AppointmentReports = ({
                     </div>
                   ))}
                   {pendingAppointments.length + acceptedAppointments.length > 5 && (
-                    <button 
+                    <button
                       onClick={() => setActiveTab('pending')}
                       className="w-full mt-3 px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium rounded-lg transition-colors"
                     >
@@ -144,7 +161,7 @@ const AppointmentReports = ({
           </div>
 
           {/* Cancelled Appointments */}
-          <div className="bg-linear-to-br from-red-50 to-rose-50 rounded-lg p-6 border border-red-200">
+          <div className="bg-gradient-to-br from-red-50 to-rose-50 rounded-lg p-6 border border-red-200">
             <div className="flex items-center gap-3 mb-4">
               <div className="flex items-center justify-center w-10 h-10 bg-red-100 rounded-lg">
                 <FaBan className="h-5 w-5 text-red-600" />
@@ -167,7 +184,7 @@ const AppointmentReports = ({
                     </div>
                   ))}
                   {cancelledAppointments?.length > 5 && (
-                    <button 
+                    <button
                       onClick={() => setActiveTab('cancelled')}
                       className="w-full mt-3 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors"
                     >
@@ -183,9 +200,9 @@ const AppointmentReports = ({
         </div>
       )}
 
-      {/* Detailed views for each appointment type */}
+      {/* Detailed views for each appointment type - Now using tables */}
       {activeTab === 'completed' && (
-        <AppointmentSection
+        <AppointmentTableSection
           title="All Completed Appointments"
           icon={<FaCheckCircle className="h-5 w-5 text-green-600" />}
           appointments={paginatedCompletedAppointments}
@@ -195,12 +212,14 @@ const AppointmentReports = ({
           getTotalPages={getTotalPages}
           handlePageChange={handlePageChange}
           section="completed"
-          parseServices={parseServices}
+          formatServicesPreview={formatServicesPreview}
+          handleViewDetails={handleViewDetails}
+          headerColor="from-green-600 to-green-700"
         />
       )}
 
       {activeTab === 'pending' && (
-        <AppointmentSection
+        <AppointmentTableSection
           title="All Active Appointments"
           icon={<FaClock className="h-5 w-5 text-yellow-600" />}
           appointments={paginatedPendingAppointments}
@@ -210,12 +229,14 @@ const AppointmentReports = ({
           getTotalPages={getTotalPages}
           handlePageChange={handlePageChange}
           section="pending"
-          parseServices={parseServices}
+          formatServicesPreview={formatServicesPreview}
+          handleViewDetails={handleViewDetails}
+          headerColor="from-yellow-600 to-yellow-700"
         />
       )}
 
       {activeTab === 'cancelled' && (
-        <AppointmentSection
+        <AppointmentTableSection
           title="All Cancelled Appointments"
           icon={<FaBan className="h-5 w-5 text-red-600" />}
           appointments={paginatedCancelledAppointments}
@@ -225,14 +246,24 @@ const AppointmentReports = ({
           getTotalPages={getTotalPages}
           handlePageChange={handlePageChange}
           section="cancelled"
-          parseServices={parseServices}
+          formatServicesPreview={formatServicesPreview}
+          handleViewDetails={handleViewDetails}
+          headerColor="from-red-600 to-red-700"
         />
       )}
+
+      {/* Appointment Details Modal */}
+      <AppointmentDetailsModal
+        isOpen={viewModalOpen}
+        onClose={handleCloseViewModal}
+        appointment={selectedAppointment}
+        parseServices={parseServices}
+      />
     </div>
   );
 };
 
-interface AppointmentSectionProps {
+interface AppointmentTableSectionProps {
   title: string;
   icon: React.ReactElement;
   appointments: Appointment[];
@@ -242,10 +273,12 @@ interface AppointmentSectionProps {
   getTotalPages: (totalItems: number) => number;
   handlePageChange: (section: keyof CurrentPage, page: number) => void;
   section: string;
-  parseServices: (servicesStr: string) => Service[];
+  formatServicesPreview: (servicesData: string | Service[] | undefined) => string;
+  handleViewDetails: (appointment: Appointment) => void;
+  headerColor: string;
 }
 
-const AppointmentSection = ({
+const AppointmentTableSection = ({
   title,
   icon,
   appointments,
@@ -253,18 +286,20 @@ const AppointmentSection = ({
   statusBadge,
   currentPage,
   getTotalPages,
+  handlePageChange,
   section,
-  parseServices
-}: AppointmentSectionProps) => {
+  formatServicesPreview,
+  handleViewDetails,
+  headerColor
+}: AppointmentTableSectionProps) => {
   return (
     <>
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center gap-3">
-          <div className={`flex items-center justify-center w-10 h-10 rounded-lg ${
-            statusBadge === 'completed' ? 'bg-green-100' :
+          <div className={`flex items-center justify-center w-10 h-10 rounded-lg ${statusBadge === 'completed' ? 'bg-green-100' :
             statusBadge === 'cancelled' ? 'bg-red-100' : 'bg-yellow-100'
-          }`}>
+            }`}>
             {icon}
           </div>
           <h3 className="text-xl font-bold text-gray-900">{title}</h3>
@@ -274,90 +309,105 @@ const AppointmentSection = ({
       {/* Content */}
       {appointments.length > 0 ? (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            {appointments.map((app: Appointment) => {
-              const services = parseServices(app.services || '');
-              return (
-                <div key={app.id} className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
-                  {/* Card Header */}
-                  <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-                    <span className="text-sm font-semibold text-gray-600">Appointment #{app.id}</span>
-                    <span className={`px-3 py-1 text-xs font-medium rounded-full ${
-                      (app.status?.toLowerCase() || statusBadge) === 'completed' 
-                        ? 'bg-green-100 text-green-800'
-                        : (app.status?.toLowerCase() || statusBadge) === 'cancelled'
-                        ? 'bg-red-100 text-red-800'
-                        : (app.status?.toLowerCase() || statusBadge) === 'accepted'
-                        ? 'bg-blue-100 text-blue-800'
-                        : 'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {app.status || statusBadge}
-                    </span>
-                  </div>
-                  
-                  {/* Card Body */}
-                  <div className="p-6 space-y-4">
-                    <h4 className="text-lg font-bold text-gray-900">{app.name}</h4>
-                    
-                    <div className="space-y-2 text-sm">
-                      <div className="flex items-start gap-2">
-                        <span className="font-semibold text-gray-700 min-w-20">Contact:</span>
-                        <span className="text-gray-600">{app.phone} | {app.email || 'N/A'}</span>
-                      </div>
-                      
-                      <div className="flex items-start gap-2">
-                        <span className="font-semibold text-gray-700 min-w-20">Address:</span>
-                        <span className="text-gray-600">{app.complete_address}</span>
-                      </div>
-                    </div>
-                    
-                    {/* Services */}
-                    <div className="pt-4 border-t border-gray-200">
-                      <p className="font-semibold text-gray-700 mb-3 text-sm">Services:</p>
-                      {services.length > 0 ? (
-                        <ul className="space-y-2">
-                          {services.map((service: Service, idx: number) => (
-                            <li key={idx} className="flex items-start gap-2 text-sm bg-blue-50 p-3 rounded-lg">
-                              <span className="text-blue-600 mt-0.5">•</span>
-                              <div className="flex-1">
-                                <div className="text-gray-900 font-medium">{service.type}</div>
-                                <div className="text-gray-600 text-xs mt-1">
-                                  {new Date(service.date).toLocaleDateString('en-US', {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric'
-                                  })}
-                                </div>
-                                {service.ac_types && service.ac_types.length > 0 && (
-                                  <div className="flex flex-wrap gap-1 mt-2">
-                                    {service.ac_types.map((acType, i) => (
-                                      <span key={i} className="px-2 py-1 text-xs bg-white border border-blue-200 text-blue-800 rounded">
-                                        {acType}
-                                      </span>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-sm text-gray-500 italic">No service details available</p>
-                      )}
-                    </div>
-                    
-                    {/* Technicians */}
-                    <TechniciansList technicians={app.technicians} />
-                  </div>
-                </div>
-              );
-            })}
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className={`bg-gradient-to-r ${headerColor}`}>
+                  <tr>
+                    <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">ID</th>
+                    <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">Customer</th>
+                    <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">Phone</th>
+                    <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">Service(s)</th>
+                    <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">Status</th>
+                    <th scope="col" className="px-6 py-4 text-center text-xs font-bold text-white uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {appointments.map((app: Appointment, idx: number) => (
+                    <tr key={app.id} className={`hover:bg-gray-50 transition-colors duration-150 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className={`p-2 rounded-lg shadow-sm ${statusBadge === 'completed' ? 'bg-gradient-to-br from-green-500 to-green-600' :
+                            statusBadge === 'cancelled' ? 'bg-gradient-to-br from-red-500 to-red-600' :
+                              'bg-gradient-to-br from-yellow-500 to-yellow-600'
+                            }`}>
+                            {statusBadge === 'completed' ? (
+                              <FaCheckCircle className="h-4 w-4 text-white" />
+                            ) : statusBadge === 'cancelled' ? (
+                              <FaBan className="h-4 w-4 text-white" />
+                            ) : (
+                              <FaClock className="h-4 w-4 text-white" />
+                            )}
+                          </div>
+                          <span className="ml-3 text-sm font-bold text-gray-900">#{app.id}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-semibold text-gray-900">{app.name}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">{app.phone}</div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-gray-900 max-w-xs truncate">
+                          {formatServicesPreview(app.services || '')}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-3 py-1 text-xs font-medium rounded-full ${(app.status?.toLowerCase() || statusBadge) === 'completed'
+                          ? 'bg-green-100 text-green-800'
+                          : (app.status?.toLowerCase() || statusBadge) === 'cancelled'
+                            ? 'bg-red-100 text-red-800'
+                            : (app.status?.toLowerCase() || statusBadge) === 'accepted'
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-yellow-100 text-yellow-800'
+                          }`}>
+                          {app.status || statusBadge}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex justify-center">
+                          <button
+                            onClick={() => handleViewDetails(app)}
+                            className="group bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 py-2 rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow transform hover:-translate-y-0.5"
+                          >
+                            <div className="flex items-center space-x-1">
+                              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                              </svg>
+                              <span>View</span>
+                            </div>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-          
+
           {/* Pagination */}
           {getTotalPages(totalAppointments) > 1 && (
-            <div className="text-center text-sm text-gray-600 py-4">
-              Page {currentPage} of {getTotalPages(totalAppointments)}
+            <div className="flex items-center justify-center gap-2 mt-6">
+              <button
+                onClick={() => handlePageChange(section as keyof CurrentPage, currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              <span className="text-sm text-gray-700">
+                Page {currentPage} of {getTotalPages(totalAppointments)}
+              </span>
+              <button
+                onClick={() => handlePageChange(section as keyof CurrentPage, currentPage + 1)}
+                disabled={currentPage === getTotalPages(totalAppointments)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
             </div>
           )}
         </>

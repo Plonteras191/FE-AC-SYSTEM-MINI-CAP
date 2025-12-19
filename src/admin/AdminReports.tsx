@@ -57,6 +57,11 @@ const AdminReports = () => {
   });
   const itemsPerPage = 6;
 
+  // Search and filter states
+  const [searchName, setSearchName] = useState<string>('');
+  const [filterService, setFilterService] = useState<string>('');
+  const [filterDate, setFilterDate] = useState<string>('');
+
   useEffect(() => {
     setIsLoading(true);
     
@@ -108,6 +113,10 @@ const AdminReports = () => {
       cancelled: 1,
       revenue: 1
     });
+    // Clear filters when changing tabs
+    setSearchName('');
+    setFilterService('');
+    setFilterDate('');
   }, [activeTab]);
 
   // Filter revenue history when date changes
@@ -147,6 +156,60 @@ const AdminReports = () => {
     appt.status && appt.status.toLowerCase() === 'cancelled'
   );
 
+  // Helper function to parse services JSON string
+  const parseServices = (servicesStr: string): Service[] => {
+    try {
+      return JSON.parse(servicesStr);
+    } catch (error) {
+      console.error("Error parsing services:", error);
+      return [];
+    }
+  };
+
+  // Apply search and filters to appointments
+  const applyFilters = (appointmentsList: Appointment[]): Appointment[] => {
+    return appointmentsList.filter(appointment => {
+      // Filter by name (search)
+      const matchesName = searchName === '' || 
+        appointment.name.toLowerCase().includes(searchName.toLowerCase());
+      
+      // Filter by service
+      let matchesService = true;
+      if (filterService !== '') {
+        try {
+          const services = parseServices(appointment.services || '');
+          matchesService = services.some(service => 
+            service.type.toLowerCase() === filterService.toLowerCase()
+          );
+        } catch {
+          matchesService = false;
+        }
+      }
+
+      // Filter by date
+      let matchesDate = true;
+      if (filterDate !== '') {
+        try {
+          const services = parseServices(appointment.services || '');
+          matchesDate = services.some(service => {
+            const serviceDate = new Date(service.date).toISOString().split('T')[0];
+            return serviceDate === filterDate;
+          });
+        } catch {
+          matchesDate = false;
+        }
+      }
+      
+      return matchesName && matchesService && matchesDate;
+    });
+  };
+
+  // Get filtered appointments for each category
+  const filteredCompleteAppointments = applyFilters(completeAppointments);
+  const filteredPendingAppointments = applyFilters(pendingAppointments);
+  const filteredAcceptedAppointments = applyFilters(acceptedAppointments);
+  const filteredCancelledAppointments = applyFilters(cancelledAppointments);
+
   // Get paginated data
   const getPaginatedData = <T,>(data: T[], page: number): T[] => {
     const startIndex = (page - 1) * itemsPerPage;
@@ -163,21 +226,24 @@ const AdminReports = () => {
     setCurrentPage(prev => ({ ...prev, [section]: newPage }));
   };
 
+  // Clear all filters
+  const clearFilters = () => {
+    setSearchName('');
+    setFilterService('');
+    setFilterDate('');
+    setCurrentPage({
+      completed: 1,
+      pending: 1,
+      cancelled: 1,
+      revenue: 1
+    });
+  };
+
   // Calculate total filtered revenue
   const filteredTotalRevenue = filteredRevenueHistory.reduce(
     (sum, entry) => sum + parseFloat(String(entry.total_revenue || 0)), 
     0
   );
-
-  // Helper function to parse services JSON string
-  const parseServices = (servicesStr: string): Service[] => {
-    try {
-      return JSON.parse(servicesStr);
-    } catch (error) {
-      console.error("Error parsing services:", error);
-      return [];
-    }
-  };
 
   // Helper function to get appointment date from services
   const getAppointmentDate = (appt: Appointment): string => {
@@ -339,15 +405,15 @@ const AdminReports = () => {
     
     switch (activeTab) {
       case 'completed':
-        data = completeAppointments;
+        data = filteredCompleteAppointments;
         filename = 'completed-appointments';
         break;
       case 'pending':
-        data = [...pendingAppointments, ...acceptedAppointments];
+        data = [...filteredPendingAppointments, ...filteredAcceptedAppointments];
         filename = 'pending-appointments';
         break;
       case 'cancelled':
-        data = cancelledAppointments;
+        data = filteredCancelledAppointments;
         filename = 'cancelled-appointments';
         break;
       case 'revenue':
@@ -366,19 +432,19 @@ const AdminReports = () => {
     }
   };
 
-  // Get paginated data for each section
+  // Get paginated data for each section (using filtered data)
   const paginatedCompletedAppointments = getPaginatedData(
-    completeAppointments, 
+    filteredCompleteAppointments, 
     currentPage.completed
   );
   
   const paginatedPendingAppointments = getPaginatedData(
-    [...pendingAppointments, ...acceptedAppointments], 
+    filteredPendingAppointments, 
     currentPage.pending
   );
   
   const paginatedCancelledAppointments = getPaginatedData(
-    cancelledAppointments, 
+    filteredCancelledAppointments, 
     currentPage.cancelled
   );
   
@@ -443,7 +509,139 @@ const AdminReports = () => {
             setActiveTab={setActiveTab}
           />
 
-          <div className="p-4 sm:p-6 bg-gray-50/50 border-t border-gray-200">
+          <div className="p-4 sm:p-6 bg-gray-50/50 border-t border-gray-200 space-y-4">
+            {/* Search and Filter Controls for Appointments */}
+            {activeTab !== 'overview' && activeTab !== 'revenue' && (
+              <div className="bg-white p-4 rounded-lg border border-gray-200 mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  {/* Search by Name */}
+                  <div>
+                    <label htmlFor="search-name-reports" className="block text-sm font-medium text-gray-700 mb-2">
+                      Search by Name
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        id="search-name-reports"
+                        value={searchName}
+                        onChange={(e) => {
+                          setSearchName(e.target.value);
+                          setCurrentPage(prev => ({ ...prev, [activeTab]: 1 }));
+                        }}
+                        placeholder="Customer name..."
+                        className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      />
+                      <svg
+                        className="absolute left-3 top-2.5 h-5 w-5 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    </div>
+                  </div>
+
+                  {/* Filter by Service */}
+                  <div>
+                    <label htmlFor="filter-service-reports" className="block text-sm font-medium text-gray-700 mb-2">
+                      Filter by Service
+                    </label>
+                    <select
+                      id="filter-service-reports"
+                      value={filterService}
+                      onChange={(e) => {
+                        setFilterService(e.target.value);
+                        setCurrentPage(prev => ({ ...prev, [activeTab]: 1 }));
+                      }}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    >
+                      <option value="">All Services</option>
+                      <option value="Installation">Installation</option>
+                      <option value="Repair">Repair</option>
+                      <option value="Checkup and Maintenance">Checkup and Maintenance</option>
+                      <option value="Cleaning">Cleaning</option>
+                    </select>
+                  </div>
+
+                  {/* Filter by Date */}
+                  <div>
+                    <label htmlFor="filter-date-reports" className="block text-sm font-medium text-gray-700 mb-2">
+                      Filter by Date
+                    </label>
+                    <input
+                      type="date"
+                      id="filter-date-reports"
+                      value={filterDate}
+                      onChange={(e) => {
+                        setFilterDate(e.target.value);
+                        setCurrentPage(prev => ({ ...prev, [activeTab]: 1 }));
+                      }}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    />
+                  </div>
+
+                  {/* Clear Filters */}
+                  <div className="flex items-end">
+                    <button
+                      onClick={clearFilters}
+                      disabled={searchName === '' && filterService === '' && filterDate === ''}
+                      className={`w-full px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
+                        searchName === '' && filterService === '' && filterDate === ''
+                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                          : 'bg-red-500 text-white hover:bg-red-600'
+                      }`}
+                    >
+                      <div className="flex items-center justify-center space-x-2">
+                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        <span>Clear</span>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Active Filters Display */}
+                {(searchName !== '' || filterService !== '' || filterDate !== '') && (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <span className="text-sm font-medium text-gray-700">Active filters:</span>
+                    {searchName !== '' && (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
+                        Name: "{searchName}"
+                        <button onClick={() => setSearchName('')} className="ml-2 hover:text-blue-900">×</button>
+                      </span>
+                    )}
+                    {filterService !== '' && (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">
+                        Service: {filterService}
+                        <button onClick={() => setFilterService('')} className="ml-2 hover:text-green-900">×</button>
+                      </span>
+                    )}
+                    {filterDate !== '' && (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-purple-100 text-purple-800">
+                        Date: {new Date(filterDate).toLocaleDateString()}
+                        <button onClick={() => setFilterDate('')} className="ml-2 hover:text-purple-900">×</button>
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {/* Results Count */}
+                <div className="mt-3 text-sm text-gray-600">
+                  {activeTab === 'completed' && (
+                    <>Showing <span className="font-semibold">{filteredCompleteAppointments.length}</span> of <span className="font-semibold">{completeAppointments.length}</span> appointments</>
+                  )}
+                  {activeTab === 'pending' && (
+                    <>Showing <span className="font-semibold">{filteredPendingAppointments.length + filteredAcceptedAppointments.length}</span> of <span className="font-semibold">{pendingAppointments.length + acceptedAppointments.length}</span> appointments</>
+                  )}
+                  {activeTab === 'cancelled' && (
+                    <>Showing <span className="font-semibold">{filteredCancelledAppointments.length}</span> of <span className="font-semibold">{cancelledAppointments.length}</span> appointments</>
+                  )}
+                </div>
+              </div>
+            )}
+
             <ExportControls 
               activeTab={activeTab}
               exportData={exportData}

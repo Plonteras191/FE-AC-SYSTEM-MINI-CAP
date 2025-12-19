@@ -264,7 +264,7 @@ const Dashboard = () => {
     const pending = appointments.filter(a => a.status?.toLowerCase() === 'pending').length;
     const accepted = appointments.filter(a => a.status?.toLowerCase() === 'accepted').length;
     const completed = appointments.filter(a => a.status?.toLowerCase() === 'completed').length;
-    const rejected = appointments.filter(a => a.status?.toLowerCase() === 'rejected').length;
+    const rejected = appointments.filter(a => a.status?.toLowerCase() === 'cancelled').length;
     
     return { total, pending, accepted, completed, rejected };
   }, [appointments]);
@@ -294,6 +294,56 @@ const Dashboard = () => {
         return false;
       }
     });
+  }, [appointments]);
+
+  // Get upcoming appointments for the next 7 days (excluding today) (memoized)
+  const upcomingAppointments = useMemo<Appointment[]>(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const sevenDaysFromNow = new Date(today);
+    sevenDaysFromNow.setDate(today.getDate() + 7);
+    
+    return appointments
+      .filter(appointment => {
+        // Only show accepted and pending appointments
+        const status = appointment.status?.toLowerCase();
+        if (status !== 'accepted' && status !== 'pending') return false;
+        
+        // Check if any service is scheduled within the next 7 days (excluding today)
+        if (!appointment.services) return false;
+        
+        try {
+          const services: Service[] = typeof appointment.services === 'string' 
+            ? JSON.parse(appointment.services) 
+            : appointment.services;
+          
+          return services.some((service: Service) => {
+            const serviceDate = new Date(service.date);
+            serviceDate.setHours(0, 0, 0, 0);
+            
+            // Check if service is after today and within 7 days
+            return serviceDate > today && serviceDate <= sevenDaysFromNow;
+          });
+        } catch (error) {
+          console.error('Error parsing services for appointment:', appointment.id, error);
+          return false;
+        }
+      })
+      .sort((a, b) => {
+        // Sort by earliest service date
+        try {
+          const servicesA: Service[] = typeof a.services === 'string' ? JSON.parse(a.services) : a.services || [];
+          const servicesB: Service[] = typeof b.services === 'string' ? JSON.parse(b.services) : b.services || [];
+          
+          const dateA = servicesA.length > 0 ? new Date(servicesA[0].date).getTime() : 0;
+          const dateB = servicesB.length > 0 ? new Date(servicesB[0].date).getTime() : 0;
+          
+          return dateA - dateB;
+        } catch {
+          return 0;
+        }
+      });
   }, [appointments]);
 
   // Handle notification click - just mark as read
@@ -749,8 +799,8 @@ const Dashboard = () => {
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.7 }}
-            className="bg-linear-to-br from-green-50 to-emerald-50 rounded-xl shadow-md border border-green-200 p-6 hover:shadow-lg transition-all duration-200 mt-6"
+            transition={{ duration: 0.3, delay: 0.65 }}
+            className="bg-linear-to-br from-green-50 to-emerald-50 rounded-xl shadow-md border border-green-200 p-6 hover:shadow-lg transition-all duration-200"
           >
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
@@ -878,6 +928,107 @@ const Dashboard = () => {
                               </div>
                             )}
                           </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
+          </motion.div>
+          
+          {/* Upcoming Appointments Section (Next 7 Days) */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.8 }}
+            className="bg-white rounded-lg shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow duration-200"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <FaCalendarAlt className="h-5 w-5 text-indigo-600" />
+                <h2 className="text-lg font-semibold text-gray-900">Upcoming Appointments</h2>
+              </div>
+              {upcomingAppointments.length > 0 && (
+                <span className="px-3 py-1 bg-indigo-100 text-indigo-700 text-sm font-semibold rounded-full">
+                  Next 7 Days
+                </span>
+              )}
+            </div>
+            
+            {upcomingAppointments.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8 px-4 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                <FaCalendarAlt className="h-8 w-8 text-gray-400 mb-2" />
+                <p className="text-sm font-medium text-gray-600">No upcoming appointments in the next 7 days</p>
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {upcomingAppointments.map((appointment, index) => {
+                  const services: Service[] = typeof appointment.services === 'string' 
+                    ? JSON.parse(appointment.services) 
+                    : appointment.services || [];
+                  
+                  // Get the earliest service date for display
+                  const earliestService = services.reduce((earliest, service) => {
+                    return new Date(service.date) < new Date(earliest.date) ? service : earliest;
+                  }, services[0]);
+                  
+                  const appointmentDate = new Date(earliestService.date);
+                  const isToday = appointmentDate.toDateString() === new Date().toDateString();
+                  const isTomorrow = appointmentDate.toDateString() === new Date(Date.now() + 86400000).toDateString();
+                  
+                  let dateLabel = appointmentDate.toLocaleDateString('en-US', { 
+                    weekday: 'short', 
+                    month: 'short', 
+                    day: 'numeric' 
+                  });
+                  
+                  if (isToday) dateLabel = 'Today';
+                  if (isTomorrow) dateLabel = 'Tomorrow';
+                  
+                  return (
+                    <motion.div
+                      key={appointment.id}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.2, delay: index * 0.05 }}
+                      className="flex items-center gap-3 p-3 bg-gray-50 hover:bg-indigo-50 rounded-lg border border-gray-200 hover:border-indigo-300 transition-all duration-200 group"
+                    >
+                      {/* Date Badge */}
+                      <div className="flex flex-col items-center justify-center w-16 h-16 bg-indigo-600 group-hover:bg-indigo-700 rounded-lg shadow-sm shrink-0 transition-colors">
+                        <span className="text-xs font-semibold text-indigo-200 uppercase">
+                          {appointmentDate.toLocaleDateString('en-US', { month: 'short' })}
+                        </span>
+                        <span className="text-xl font-bold text-white">
+                          {appointmentDate.getDate()}
+                        </span>
+                      </div>
+                      
+                      {/* Appointment Details */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <h4 className="font-semibold text-gray-900 truncate">{appointment.name}</h4>
+                          <span className={`px-2 py-0.5 text-xs font-semibold rounded-full shrink-0 ${
+                            appointment.status?.toLowerCase() === 'accepted'
+                              ? 'bg-green-100 text-green-700'
+                              : 'bg-amber-100 text-amber-700'
+                          }`}>
+                            {appointment.status}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+                          <FaClock className="h-3 w-3" />
+                          <span className="font-medium">{dateLabel}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {services.map((service, idx) => (
+                            <span 
+                              key={idx}
+                              className="inline-flex items-center px-2 py-0.5 bg-white border border-gray-300 rounded text-xs font-medium text-gray-700"
+                            >
+                              {service.type}
+                            </span>
+                          ))}
                         </div>
                       </div>
                     </motion.div>
