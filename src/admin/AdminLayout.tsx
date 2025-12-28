@@ -6,7 +6,7 @@ import { AuthContext } from '../context/AuthContext';
 const AdminLayout = () => {
   const context = useContext(AuthContext);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  
+
   if (!context) {
     throw new Error('AdminLayout must be used within an AuthProvider');
   }
@@ -81,6 +81,15 @@ const AdminLayout = () => {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
         </svg>
       )
+    },
+    {
+      to: '/admin/technicians',
+      label: 'Technicians',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+      )
     }
   ];
 
@@ -117,7 +126,7 @@ const AdminLayout = () => {
 
         {/* Sidebar */}
         <aside className={`${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:relative inset-y-0 left-0 z-50 w-72 bg-white/95 backdrop-blur-md border-r border-gray-200/70 shadow-xl lg:shadow-none transition-transform duration-300 ease-in-out flex flex-col shrink-0`}>
-          
+
           {/* Desktop Header */}
           <div className="hidden lg:flex items-center p-6 border-b border-gray-200/50">
             <div className="flex items-center space-x-3">
@@ -168,10 +177,9 @@ const AdminLayout = () => {
                 to={item.to}
                 onClick={closeSidebar}
                 className={({ isActive }) =>
-                  `flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group ${
-                    isActive
-                      ? 'bg-linear-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/25'
-                      : 'text-gray-700 hover:text-blue-600 hover:bg-blue-50/70 hover:shadow-sm'
+                  `flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group ${isActive
+                    ? 'bg-linear-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/25'
+                    : 'text-gray-700 hover:text-blue-600 hover:bg-blue-50/70 hover:shadow-sm'
                   }`
                 }
               >

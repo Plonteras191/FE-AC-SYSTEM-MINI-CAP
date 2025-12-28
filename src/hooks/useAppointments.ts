@@ -25,18 +25,18 @@ export const useAppointmentData = () => {
     abortControllerRef.current = new AbortController();
 
     setLoadingStates(prev => ({ ...prev, fetching: true }));
-    
+
     try {
       const response = await appointmentsApi.getAll(abortControllerRef.current.signal);
       let data = response.data;
       if (!Array.isArray(data)) data = [data];
-      
-      const pending = data.filter((appt: Appointment) => 
+
+      const pending = data.filter((appt: Appointment) =>
         !appt.status || appt.status.toLowerCase() === 'pending'
       );
       setAppointments(pending);
-      
-      const accepted = data.filter((appt: Appointment) => 
+
+      const accepted = data.filter((appt: Appointment) =>
         appt.status && appt.status.toLowerCase() === 'accepted'
       );
       setAcceptedAppointments(accepted);
@@ -96,7 +96,7 @@ export const useAppointmentActions = (
   }, [fetchAppointments, setLoadingStates]);
 
   const handleAccept = useCallback(async (
-    id: number | string, 
+    id: number | string,
     technicianNames: string[]
   ) => {
     setLoadingStates(prev => ({
@@ -107,7 +107,7 @@ export const useAppointmentActions = (
     try {
       const payload = { technician_names: technicianNames };
       const response = await appointmentsApi.accept(id, payload);
-      
+
       if (response.data?.status?.toLowerCase() === 'accepted') {
         await fetchAppointments();
         toast.success("Appointment accepted and confirmation email sent.");
@@ -136,11 +136,11 @@ export const useAppointmentActions = (
     try {
       const response = await appointmentsApi.complete(id);
       const updatedAppointment = response.data;
-      
+
       // Store completed appointment for revenue tracking
       const stored = localStorage.getItem('completedAppointments');
       const completedAppointments = stored ? JSON.parse(stored) : [];
-      
+
       const exists = completedAppointments.some((app: any) => app.id === updatedAppointment.id);
       if (!exists) {
         completedAppointments.push(updatedAppointment);
@@ -176,11 +176,11 @@ export const useAppointmentActions = (
     }));
 
     const formattedDate = new Date(newDate).toISOString().split('T')[0];
-    const payload = { 
-      service_name: serviceName, 
+    const payload = {
+      service_name: serviceName,
       new_date: formattedDate
     };
-    
+
     try {
       const response = await appointmentsApi.reschedule(id, payload);
       if (response.data && !response.data.error) {
@@ -236,9 +236,11 @@ export const useAppointmentActions = (
 
 // Utility hook for parsing services
 export const useServiceParser = () => {
-  const parseServices = useCallback((servicesStr: string): Service[] => {
+  const parseServices = useCallback((servicesData: string | Service[] | undefined): Service[] => {
+    if (!servicesData) return [];
+    if (Array.isArray(servicesData)) return servicesData;
     try {
-      return JSON.parse(servicesStr);
+      return JSON.parse(servicesData);
     } catch (error) {
       console.error("Error parsing services:", error);
       return [];
@@ -248,7 +250,7 @@ export const useServiceParser = () => {
   const parseServicesFormatted = useCallback((servicesStr: string): string => {
     try {
       const services = JSON.parse(servicesStr);
-      return services.map((s: Service, index: number) => 
+      return services.map((s: Service, index: number) =>
         `${index + 1}. ${s.type} on ${s.date}`
       ).join(' | ');
     } catch (error) {

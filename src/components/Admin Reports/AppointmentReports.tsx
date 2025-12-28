@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { FaCheckCircle, FaClock, FaBan, FaCalendarAlt } from 'react-icons/fa';
-import AppointmentDetailsModal from '../Admin Appointments/AppointmentDetailsModal';
-import type { Appointment } from '../../types/appointment';
+import AppointmentDetailsModal from '../Admin Appointments/AppointmentDetailsModal.tsx';
 
 // Type definitions
 interface Service {
@@ -10,7 +9,16 @@ interface Service {
   ac_types?: string[];
 }
 
-
+interface Appointment {
+  id: number | string;
+  name: string;
+  status?: string;
+  phone: string;
+  email?: string;
+  complete_address: string;
+  services?: string | Service[];
+  technicians?: string[];
+}
 
 interface CurrentPage {
   completed: number;
@@ -27,7 +35,7 @@ interface AppointmentReportsProps {
   paginatedCompletedAppointments: Appointment[];
   paginatedPendingAppointments: Appointment[];
   paginatedCancelledAppointments: Appointment[];
-  parseServices: (servicesStr: string) => Service[];
+  parseServices: (servicesData: string | Service[] | undefined) => Service[];
   getAppointmentDate: (appointment: Appointment) => string;
   currentPage: CurrentPage;
   getTotalPages: (totalItems: number) => number;
@@ -350,7 +358,7 @@ const AppointmentTableSection = ({
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm text-gray-900 max-w-xs truncate">
-                          {formatServicesPreview(app.services || '')}
+                          {formatServicesPreview(app.services)}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">

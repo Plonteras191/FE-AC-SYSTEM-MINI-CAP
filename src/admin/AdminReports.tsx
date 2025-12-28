@@ -21,7 +21,7 @@ interface Appointment {
   phone: string;
   email?: string;
   complete_address: string;
-  services?: string;
+  services?: string | Service[];
   technicians?: string[];
 }
 
@@ -47,7 +47,7 @@ const AdminReports = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<string>('overview');
   const [selectedDate, setSelectedDate] = useState<string>('');
-  
+
   // Pagination states
   const [currentPage, setCurrentPage] = useState<CurrentPage>({
     completed: 1,
@@ -64,7 +64,7 @@ const AdminReports = () => {
 
   useEffect(() => {
     setIsLoading(true);
-    
+
     // Fetch all appointments using the appointments API service
     appointmentsApi.getAll()
       .then(response => {
@@ -140,26 +140,28 @@ const AdminReports = () => {
   }, [selectedDate, revenueHistory]);
 
   // Filter appointments based on status
-  const completeAppointments = appointments.filter(appt => 
+  const completeAppointments = appointments.filter(appt =>
     appt.status && appt.status.toLowerCase() === 'completed'
   );
-  
-  const pendingAppointments = appointments.filter(appt => 
+
+  const pendingAppointments = appointments.filter(appt =>
     !appt.status || appt.status.toLowerCase() === 'pending'
   );
-  
-  const acceptedAppointments = appointments.filter(appt => 
+
+  const acceptedAppointments = appointments.filter(appt =>
     appt.status && appt.status.toLowerCase() === 'accepted'
   );
-  
-  const cancelledAppointments = appointments.filter(appt => 
+
+  const cancelledAppointments = appointments.filter(appt =>
     appt.status && appt.status.toLowerCase() === 'cancelled'
   );
 
-  // Helper function to parse services JSON string
-  const parseServices = (servicesStr: string): Service[] => {
+  // Helper function to parse services JSON string or return array directly
+  const parseServices = (servicesData: string | Service[] | undefined): Service[] => {
+    if (!servicesData) return [];
+    if (Array.isArray(servicesData)) return servicesData;
     try {
-      return JSON.parse(servicesStr);
+      return JSON.parse(servicesData);
     } catch (error) {
       console.error("Error parsing services:", error);
       return [];
@@ -170,15 +172,15 @@ const AdminReports = () => {
   const applyFilters = (appointmentsList: Appointment[]): Appointment[] => {
     return appointmentsList.filter(appointment => {
       // Filter by name (search)
-      const matchesName = searchName === '' || 
+      const matchesName = searchName === '' ||
         appointment.name.toLowerCase().includes(searchName.toLowerCase());
-      
+
       // Filter by service
       let matchesService = true;
       if (filterService !== '') {
         try {
-          const services = parseServices(appointment.services || '');
-          matchesService = services.some(service => 
+          const services = parseServices(appointment.services);
+          matchesService = services.some(service =>
             service.type.toLowerCase() === filterService.toLowerCase()
           );
         } catch {
@@ -190,7 +192,7 @@ const AdminReports = () => {
       let matchesDate = true;
       if (filterDate !== '') {
         try {
-          const services = parseServices(appointment.services || '');
+          const services = parseServices(appointment.services);
           matchesDate = services.some(service => {
             const serviceDate = new Date(service.date).toISOString().split('T')[0];
             return serviceDate === filterDate;
@@ -199,7 +201,7 @@ const AdminReports = () => {
           matchesDate = false;
         }
       }
-      
+
       return matchesName && matchesService && matchesDate;
     });
   };
@@ -241,14 +243,14 @@ const AdminReports = () => {
 
   // Calculate total filtered revenue
   const filteredTotalRevenue = filteredRevenueHistory.reduce(
-    (sum, entry) => sum + parseFloat(String(entry.total_revenue || 0)), 
+    (sum, entry) => sum + parseFloat(String(entry.total_revenue || 0)),
     0
   );
 
   // Helper function to get appointment date from services
   const getAppointmentDate = (appt: Appointment): string => {
     if (!appt.services) return 'N/A';
-    
+
     try {
       const services = parseServices(appt.services);
       if (services.length > 0 && services[0].date) {
@@ -288,11 +290,11 @@ const AdminReports = () => {
   // Export data to CSV
   const exportToCSV = (data: any, filename: string): void => {
     const csvData: string[][] = [];
-    
+
     // Add headers
     if (activeTab === 'revenue') {
       csvData.push(['Date Recorded', 'Service Type', 'Booking ID', 'Total Revenue']);
-      
+
       // Add data rows - export filtered data
       filteredRevenueHistory.forEach(entry => {
         csvData.push([
@@ -302,23 +304,22 @@ const AdminReports = () => {
           formatCurrency(entry.total_revenue)
         ]);
       });
-      
+
       // Add total row
       csvData.push(['Total', '', '', formatCurrency(filteredTotalRevenue)]);
     } else {
       // Add appointment headers
       csvData.push(['ID', 'Name', 'Status', 'Contact', 'Email', 'Address', 'Services']);
-      
+
       // Add appointment data
       (data as Appointment[]).forEach(app => {
         const services = parseServices(app.services || '');
-        const servicesText = services.map(service => 
-          `${service.type} on ${new Date(service.date).toLocaleDateString()}${
-            service.ac_types && service.ac_types.length > 0 ? 
+        const servicesText = services.map(service =>
+          `${service.type} on ${new Date(service.date).toLocaleDateString()}${service.ac_types && service.ac_types.length > 0 ?
             ` | AC Types: ${service.ac_types.join(', ')}` : ''
           }`
         ).join('; ');
-        
+
         csvData.push([
           String(app.id),
           app.name,
@@ -330,10 +331,10 @@ const AdminReports = () => {
         ]);
       });
     }
-    
+
     // Create CSV string
     const csvString = csvData.map(row => row.join(',')).join('\n');
-    
+
     // Create a blob and download
     const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
@@ -350,7 +351,7 @@ const AdminReports = () => {
   const exportToExcel = (data: any, filename: string): void => {
     const workbook = XLSX.utils.book_new();
     let worksheet;
-    
+
     if (activeTab === 'revenue') {
       // Format revenue data for Excel - use filtered data
       const excelData = filteredRevenueHistory.map(entry => ({
@@ -359,7 +360,7 @@ const AdminReports = () => {
         'Booking ID': entry.booking_id || 'N/A',
         'Total Revenue': formatCurrency(entry.total_revenue)
       }));
-      
+
       // Add total row
       excelData.push({
         'Date Recorded': 'Total',
@@ -367,19 +368,18 @@ const AdminReports = () => {
         'Booking ID': '',
         'Total Revenue': formatCurrency(filteredTotalRevenue)
       });
-      
+
       worksheet = XLSX.utils.json_to_sheet(excelData);
     } else {
       // Format appointment data for Excel
       const excelData = (data as Appointment[]).map(app => {
         const services = parseServices(app.services || '');
-        const servicesText = services.map(service => 
-          `${service.type} on ${new Date(service.date).toLocaleDateString()}${
-            service.ac_types && service.ac_types.length > 0 ? 
+        const servicesText = services.map(service =>
+          `${service.type} on ${new Date(service.date).toLocaleDateString()}${service.ac_types && service.ac_types.length > 0 ?
             ` | AC Types: ${service.ac_types.join(', ')}` : ''
           }`
         ).join('; ');
-        
+
         return {
           'ID': app.id,
           'Name': app.name,
@@ -390,10 +390,10 @@ const AdminReports = () => {
           'Services': servicesText
         };
       });
-      
+
       worksheet = XLSX.utils.json_to_sheet(excelData);
     }
-    
+
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Data');
     XLSX.writeFile(workbook, `${filename}.xlsx`);
   };
@@ -402,7 +402,7 @@ const AdminReports = () => {
   const exportData = (format: string): void => {
     let data;
     let filename;
-    
+
     switch (activeTab) {
       case 'completed':
         data = filteredCompleteAppointments;
@@ -424,7 +424,7 @@ const AdminReports = () => {
         data = appointments;
         filename = 'all-appointments';
     }
-    
+
     if (format === 'csv') {
       exportToCSV(data, filename);
     } else if (format === 'excel') {
@@ -434,22 +434,22 @@ const AdminReports = () => {
 
   // Get paginated data for each section (using filtered data)
   const paginatedCompletedAppointments = getPaginatedData(
-    filteredCompleteAppointments, 
+    filteredCompleteAppointments,
     currentPage.completed
   );
-  
+
   const paginatedPendingAppointments = getPaginatedData(
-    filteredPendingAppointments, 
+    filteredPendingAppointments,
     currentPage.pending
   );
-  
+
   const paginatedCancelledAppointments = getPaginatedData(
-    filteredCancelledAppointments, 
+    filteredCancelledAppointments,
     currentPage.cancelled
   );
-  
+
   const paginatedRevenueHistory = getPaginatedData(
-    filteredRevenueHistory, 
+    filteredRevenueHistory,
     currentPage.revenue
   );
 
@@ -480,9 +480,9 @@ const AdminReports = () => {
               <FaCalendarAlt className="h-4 w-4 text-blue-600" />
               <span className="text-sm font-medium text-gray-700">
                 {new Date().toLocaleDateString('en-US', {
-                  weekday: 'long', 
-                  year: 'numeric', 
-                  month: 'long', 
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
                   day: 'numeric'
                 })}
               </span>
@@ -494,7 +494,7 @@ const AdminReports = () => {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
         {/* Stats Section */}
-        <ReportStats 
+        <ReportStats
           completeAppointments={completeAppointments}
           pendingAppointments={pendingAppointments}
           acceptedAppointments={acceptedAppointments}
@@ -504,7 +504,7 @@ const AdminReports = () => {
 
         {/* Tabs and Controls Card */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <ReportTabs 
+          <ReportTabs
             activeTab={activeTab}
             setActiveTab={setActiveTab}
           />
@@ -586,11 +586,10 @@ const AdminReports = () => {
                     <button
                       onClick={clearFilters}
                       disabled={searchName === '' && filterService === '' && filterDate === ''}
-                      className={`w-full px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
-                        searchName === '' && filterService === '' && filterDate === ''
-                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                          : 'bg-red-500 text-white hover:bg-red-600'
-                      }`}
+                      className={`w-full px-4 py-2 rounded-lg font-medium transition-colors text-sm ${searchName === '' && filterService === '' && filterDate === ''
+                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        : 'bg-red-500 text-white hover:bg-red-600'
+                        }`}
                     >
                       <div className="flex items-center justify-center space-x-2">
                         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -642,7 +641,7 @@ const AdminReports = () => {
               </div>
             )}
 
-            <ExportControls 
+            <ExportControls
               activeTab={activeTab}
               exportData={exportData}
               selectedDate={selectedDate}
@@ -655,7 +654,7 @@ const AdminReports = () => {
         {/* Reports Content */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           {activeTab === 'revenue' ? (
-            <RevenueHistory 
+            <RevenueHistory
               selectedDate={selectedDate}
               filteredRevenueHistory={filteredRevenueHistory}
               paginatedRevenueHistory={paginatedRevenueHistory}
@@ -666,7 +665,7 @@ const AdminReports = () => {
               getTotalPages={getTotalPages}
             />
           ) : (
-            <AppointmentReports 
+            <AppointmentReports
               activeTab={activeTab}
               completeAppointments={completeAppointments}
               pendingAppointments={pendingAppointments}

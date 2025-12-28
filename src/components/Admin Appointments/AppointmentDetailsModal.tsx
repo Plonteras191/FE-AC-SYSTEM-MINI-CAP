@@ -1,10 +1,26 @@
-import type { Appointment, Service } from '../../types/appointment';
+// Local type definitions
+interface Service {
+    type: string;
+    date: string;
+    ac_types?: string[];
+}
+
+interface Appointment {
+    id: number | string;
+    name: string;
+    status?: string;
+    phone: string;
+    email?: string;
+    complete_address: string;
+    services?: string | Service[];
+    technicians?: string[];
+}
 
 interface AppointmentDetailsModalProps {
     isOpen: boolean;
     onClose: () => void;
     appointment: Appointment | null;
-    parseServices: (str: string) => Service[];
+    parseServices: (servicesData: string | Service[] | undefined) => Service[];
 }
 
 const AppointmentDetailsModal = ({
@@ -17,7 +33,7 @@ const AppointmentDetailsModal = ({
 
     const services = typeof appointment.services === 'string'
         ? parseServices(appointment.services)
-        : appointment.services;
+        : (appointment.services || []);
 
     return (
         <div className="fixed inset-0 z-[9999] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">

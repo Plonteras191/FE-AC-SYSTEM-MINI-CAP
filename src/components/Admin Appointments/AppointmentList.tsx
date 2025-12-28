@@ -13,7 +13,7 @@ interface AppointmentListProps {
   openRescheduleModal: (id: number | string, service: Service) => void;
   openCompleteModal: (id: number | string) => void;
   openReturnToPendingModal: (id: number | string) => void;
-  parseServices: (str: string) => Service[];
+  parseServices: (servicesData: string | Service[] | undefined) => Service[];
   parseServicesFormatted: (str: string) => string;
   parseAcTypes: (str: string) => string;
 }

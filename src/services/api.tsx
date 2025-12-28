@@ -15,26 +15,47 @@ const apiClient = axios.create({
 
 // API endpoints functions with AbortSignal support
 export const appointmentsApi = {
-  getAll: (signal?: AbortSignal) => 
+  getAll: (signal?: AbortSignal) =>
     apiClient.get('/appointments', { signal }),
-  
-  delete: (id: number | string, reason: string = '', signal?: AbortSignal) => 
+
+  delete: (id: number | string, reason: string = '', signal?: AbortSignal) =>
     apiClient.delete(`/appointments/${id}`, { data: { reason }, signal }),
-  
-  accept: (id: number | string, payload: AcceptPayload, signal?: AbortSignal) => 
+
+  accept: (id: number | string, payload: AcceptPayload, signal?: AbortSignal) =>
     apiClient.post(`/appointments/${id}/accept`, payload, { signal }),
-  
-  complete: (id: number | string, signal?: AbortSignal) => 
+
+  complete: (id: number | string, signal?: AbortSignal) =>
     apiClient.post(`/appointments/${id}/complete`, {}, { signal }),
-  
-  reschedule: (id: number | string, payload: ReschedulePayload, signal?: AbortSignal) => 
+
+  reschedule: (id: number | string, payload: ReschedulePayload, signal?: AbortSignal) =>
     apiClient.put(`/appointments/${id}/reschedule`, payload, { signal }),
-  
-  getTechnicians: (signal?: AbortSignal) => 
+
+  getTechnicians: (signal?: AbortSignal) =>
     apiClient.get('/appointments/technicians', { signal }),
-  
-  returnToPending: (id: number | string, signal?: AbortSignal) => 
+
+  returnToPending: (id: number | string, signal?: AbortSignal) =>
     apiClient.post(`/appointments/${id}/return-to-pending`, {}, { signal })
+};
+
+// Technician Management API
+export const techniciansApi = {
+  getAll: (signal?: AbortSignal) =>
+    apiClient.get('/technicians', { signal }),
+
+  getById: (id: number, signal?: AbortSignal) =>
+    apiClient.get(`/technicians/${id}`, { signal }),
+
+  getBookings: (id: number, params?: any, signal?: AbortSignal) =>
+    apiClient.get(`/technicians/${id}/bookings`, { params, signal }),
+
+  create: (name: string, signal?: AbortSignal) =>
+    apiClient.post('/technicians', { name }, { signal }),
+
+  update: (id: number, name: string, signal?: AbortSignal) =>
+    apiClient.put(`/technicians/${id}`, { name }, { signal }),
+
+  delete: (id: number, signal?: AbortSignal) =>
+    apiClient.delete(`/technicians/${id}`, { signal })
 };
 
 export default apiClient;
