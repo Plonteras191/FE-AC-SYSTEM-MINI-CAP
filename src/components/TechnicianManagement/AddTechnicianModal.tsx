@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { techniciansApi } from '../../services/api.tsx';
-// Removed unused import 'TechnicianFormData'
 
 interface AddTechnicianModalProps {
     isOpen: boolean;
@@ -40,14 +39,14 @@ const AddTechnicianModal = ({ isOpen, onClose, onSuccess }: AddTechnicianModalPr
     };
 
     return (
-        <div className="fixed inset-0 z-9999 overflow-y-auto">
+        <div className="fixed inset-0 z-[9999] overflow-y-auto">
             <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                 <div className="fixed inset-0 bg-transparent transition-opacity" onClick={onClose}></div>
                 <span className="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
 
                 <div className="relative inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl border-4 border-gray-800 transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full z-10">
                     {/* Header */}
-                    <div className="bg-linear-to-r from-blue-600 to-indigo-600 px-6 py-3">
+                    <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-3">
                                 <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
@@ -97,7 +96,7 @@ const AddTechnicianModal = ({ isOpen, onClose, onSuccess }: AddTechnicianModalPr
                             </button>
                             <button
                                 type="submit"
-                                className="px-4 py-2 bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg font-semibold transition-colors disabled:opacity-50"
+                                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg font-semibold transition-colors disabled:opacity-50"
                                 disabled={isSubmitting}
                             >
                                 {isSubmitting ? 'Adding...' : 'Add Technician'}
