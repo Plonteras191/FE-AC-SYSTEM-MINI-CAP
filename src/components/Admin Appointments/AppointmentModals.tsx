@@ -56,7 +56,7 @@ const AppointmentModals = ({
 }: AppointmentModalsProps) => {
   const isAccepting = selectedAppointmentId ? loadingStates.accepting[selectedAppointmentId] : false;
   const isRescheduling = selectedAppointmentId ? loadingStates.rescheduling[selectedAppointmentId] : false;
-  const isReturningToPending = selectedAppointmentId ? loadingStates.returningToPending[selectedAppointmentId] : false;
+  // Removed unused variable 'isReturningToPending'
   return (
     <>
       {/* Cancel Modal */}
@@ -207,7 +207,9 @@ const AppointmentModals = ({
         isOpen={isCompleteModalOpen}
         title="Confirm Completion"
         message="Are you sure you want to mark this appointment as completed?"
-        onConfirm={() => completeAppointment(selectedAppointmentId)}
+        onConfirm={() => {
+          if (selectedAppointmentId !== null) completeAppointment(selectedAppointmentId);
+        }}
         onCancel={handleCancelModal}
         actionType="complete"
       />
