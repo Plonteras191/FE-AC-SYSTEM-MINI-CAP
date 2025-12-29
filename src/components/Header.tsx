@@ -1,8 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -13,24 +22,29 @@ const Header = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
+          ? 'bg-white/95 backdrop-blur-md shadow-md py-2'
+          : 'bg-white py-4'
+        }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16 lg:h-20">
+        <div className="flex justify-between items-center">
           {/* Logo */}
-          <NavLink 
-            to="/" 
-            className="flex items-center space-x-2 group"
+          <NavLink
+            to="/"
+            className="flex items-center space-x-3 group"
             onClick={closeMenu}
           >
-            <div className="text-3xl lg:text-4xl group-hover:scale-110 transition-transform duration-300">
-              ❄️
+            <div className="bg-blue-50 p-2 rounded-lg group-hover:scale-110 transition-transform duration-300">
+              <span className="text-2xl">❄️</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-lg lg:text-xl font-bold bg-linear-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
-                EER Aircon
+              <span className="text-xl lg:text-2xl font-bold text-gray-900 tracking-tight">
+                EER<span className="text-blue-600">Aircon</span>
               </span>
-              <span className="text-xs lg:text-sm text-gray-600 font-medium -mt-1">
-                Service
+              <span className="text-xs text-gray-500 font-medium tracking-wider uppercase">
+                Cleaning & Repair Service
               </span>
             </div>
           </NavLink>
@@ -41,181 +55,134 @@ const Header = () => {
               to="/"
               end
               className={({ isActive }) =>
-                `relative px-3 py-2 text-sm font-medium transition-all duration-300 hover:text-blue-600 ${
-                  isActive
-                    ? 'text-blue-600'
-                    : 'text-gray-700 hover:text-blue-600'
+                `relative text-sm font-semibold transition-colors duration-300 py-2 group ${isActive ? 'text-blue-600' : 'text-gray-600 hover:text-blue-600'
                 }`
               }
             >
-              {({ isActive }) => (
-                <>
-                  Home
-                  {isActive && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-linear-to-r from-blue-600 to-cyan-600 rounded-full"></div>
-                  )}
-                </>
-              )}
-            </NavLink>
-
-            <NavLink
-              to="/about"
-              className={({ isActive }) =>
-                `relative px-3 py-2 text-sm font-medium transition-all duration-300 hover:text-blue-600 ${
-                  isActive
-                    ? 'text-blue-600'
-                    : 'text-gray-700 hover:text-blue-600'
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  About Us
-                  {isActive && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-linear-to-r from-blue-600 to-cyan-600 rounded-full"></div>
-                  )}
-                </>
-              )}
+              Home
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>
             </NavLink>
 
             <NavLink
               to="/services"
               className={({ isActive }) =>
-                `relative px-3 py-2 text-sm font-medium transition-all duration-300 hover:text-blue-600 ${
-                  isActive
-                    ? 'text-blue-600'
-                    : 'text-gray-700 hover:text-blue-600'
+                `relative text-sm font-semibold transition-colors duration-300 py-2 group ${isActive ? 'text-blue-600' : 'text-gray-600 hover:text-blue-600'
                 }`
               }
             >
-              {({ isActive }) => (
-                <>
-                  Services
-                  {isActive && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-linear-to-r from-blue-600 to-cyan-600 rounded-full"></div>
-                  )}
-                </>
-              )}
+              Services
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>
             </NavLink>
 
             <NavLink
-              to="/call-us"
+              to="/about"
               className={({ isActive }) =>
-                `relative px-3 py-2 text-sm font-medium transition-all duration-300 hover:text-blue-600 ${
-                  isActive
-                    ? 'text-blue-600'
-                    : 'text-gray-700 hover:text-blue-600'
+                `relative text-sm font-semibold transition-colors duration-300 py-2 group ${isActive ? 'text-blue-600' : 'text-gray-600 hover:text-blue-600'
                 }`
               }
             >
-              {({ isActive }) => (
-                <>
-                  Call Us
-                  {isActive && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-linear-to-r from-blue-600 to-cyan-600 rounded-full"></div>
-                  )}
-                </>
-              )}
+              About Us
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>
             </NavLink>
+
+            <div className="h-6 w-px bg-gray-200"></div>
+
+            <div className="flex flex-col items-end mr-4">
+              <span className="text-xs text-gray-500 font-medium">Need Help?</span>
+              <span className="text-sm font-bold text-gray-900">+63 910 399 8178</span>
+            </div>
           </nav>
 
           {/* CTA Buttons */}
           <div className="hidden lg:flex items-center space-x-4">
             <NavLink
-              to="/booking"
-              className="bg-linear-to-r from-blue-600 to-cyan-600 text-white px-6 py-2.5 rounded-xl font-semibold text-sm
-                         hover:from-blue-700 hover:to-cyan-700 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+              to="/call-us"
+              className="px-5 py-2.5 text-sm font-semibold text-blue-600 border-2 border-blue-600 rounded-lg 
+                         hover:bg-blue-50 transition-colors duration-300"
             >
-              Book Now
+              Call Now
+            </NavLink>
+            <NavLink
+              to="/booking"
+              className="px-6 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-lg 
+                         hover:bg-blue-700 shadow-lg hover:shadow-blue-500/30 transition-all duration-300 hover:-translate-y-0.5"
+            >
+              Book Service
             </NavLink>
           </div>
 
           {/* Mobile Menu Button */}
           <button
             onClick={toggleMenu}
-            className="lg:hidden relative w-10 h-10 text-gray-600 hover:text-gray-900 focus:outline-none focus:text-gray-900 transition-colors duration-300"
+            className="lg:hidden p-2 text-gray-600 hover:text-blue-600 transition-colors"
             aria-label="Toggle menu"
           >
-            <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
-              <div className={`w-6 h-0.5 bg-current transition-all duration-300 ${isMenuOpen ? 'rotate-45 translate-y-0' : 'translate-y-1.5'}`}></div>
-              <div className={`w-6 h-0.5 bg-current transition-all duration-300 ${isMenuOpen ? 'opacity-0' : 'opacity-100'}`}></div>
-              <div className={`w-6 h-0.5 bg-current transition-all duration-300 ${isMenuOpen ? '-rotate-45 translate-y-0' : '-translate-y-1.5'}`}></div>
-            </div>
+            {isMenuOpen ? (
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            )}
           </button>
         </div>
 
         {/* Mobile Navigation Menu */}
-        <div className={`lg:hidden transition-all duration-500 ease-in-out ${
-          isMenuOpen 
-            ? 'max-h-96 opacity-100 visible' 
-            : 'max-h-0 opacity-0 invisible'
-        } overflow-hidden`}>
-          <nav className="py-4 space-y-2 border-t border-gray-200 bg-white/95 backdrop-blur-md">
+        <div
+          className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${isMenuOpen ? 'max-h-96 opacity-100 mt-4' : 'max-h-0 opacity-0'
+            }`}
+        >
+          <nav className="flex flex-col space-y-2 pb-4">
             <NavLink
               to="/"
               end
               onClick={closeMenu}
               className={({ isActive }) =>
-                `block px-4 py-3 text-base font-medium rounded-lg mx-2 transition-all duration-300 ${
-                  isActive
-                    ? 'bg-blue-50 text-blue-600 border-l-4 border-blue-600'
-                    : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600'
+                `px-4 py-3 rounded-lg text-sm font-semibold transition-colors ${isActive ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50'
                 }`
               }
             >
-              🏠 Home
+              Home
             </NavLink>
-
-            <NavLink
-              to="/about"
-              onClick={closeMenu}
-              className={({ isActive }) =>
-                `block px-4 py-3 text-base font-medium rounded-lg mx-2 transition-all duration-300 ${
-                  isActive
-                    ? 'bg-blue-50 text-blue-600 border-l-4 border-blue-600'
-                    : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600'
-                }`
-              }
-            >
-              ℹ️ About Us
-            </NavLink>
-
             <NavLink
               to="/services"
               onClick={closeMenu}
               className={({ isActive }) =>
-                `block px-4 py-3 text-base font-medium rounded-lg mx-2 transition-all duration-300 ${
-                  isActive
-                    ? 'bg-blue-50 text-blue-600 border-l-4 border-blue-600'
-                    : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600'
+                `px-4 py-3 rounded-lg text-sm font-semibold transition-colors ${isActive ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50'
                 }`
               }
             >
-              🔧 Services
+              Services
             </NavLink>
-
+            <NavLink
+              to="/about"
+              onClick={closeMenu}
+              className={({ isActive }) =>
+                `px-4 py-3 rounded-lg text-sm font-semibold transition-colors ${isActive ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50'
+                }`
+              }
+            >
+              About Us
+            </NavLink>
             <NavLink
               to="/call-us"
               onClick={closeMenu}
               className={({ isActive }) =>
-                `block px-4 py-3 text-base font-medium rounded-lg mx-2 transition-all duration-300 ${
-                  isActive
-                    ? 'bg-blue-50 text-blue-600 border-l-4 border-blue-600'
-                    : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600'
+                `px-4 py-3 rounded-lg text-sm font-semibold transition-colors ${isActive ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50'
                 }`
               }
             >
-              📞 Call Us
+              Contact Us
             </NavLink>
-
-            <div className="px-2 pt-4 pb-2 space-y-2">
+            <div className="pt-2">
               <NavLink
                 to="/booking"
                 onClick={closeMenu}
-                className="block w-full bg-linear-to-r from-blue-600 to-cyan-600 text-white text-center px-4 py-3 rounded-xl font-semibold
-                           hover:from-blue-700 hover:to-cyan-700 transition-all duration-300 shadow-lg"
+                className="block w-full text-center px-4 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
               >
-                📅 Book Appointment
+                Book Appointment
               </NavLink>
             </div>
           </nav>

@@ -25,6 +25,7 @@ import AdminTechnicians from './admin/AdminTechnicians';
 import AdminLayout from './admin/AdminLayout';
 
 import PageWrapper from './components/PageWrapper';
+import Footer from './components/Footer';
 
 const AnimatedRoutes = () => {
   const location = useLocation();
@@ -69,6 +70,7 @@ const App = () => {
     <AuthProvider>
       {!isAdminRoute && <Header />}
       <AnimatedRoutes />
+      {!isAdminRoute && <Footer />}
       <ToastContainer
         position="top-right"
         autoClose={5000}
